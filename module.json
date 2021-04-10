@@ -1,0 +1,10 @@
+{
+	"name": "truerng",
+	"title": "True RNG",
+	"description": "Replaces the default random number generator with api calls to random.org. Providing truly random dice rolls",
+	"version": "1.0.0",
+	"author": "KiD Fearless",
+	"minimumCoreVersion": "0.5.5",
+	"compatibleCoreVersion": "0.7.9",
+	"scripts": ["kidfearless.foundry.rng.js"]
+}
