@@ -6,5 +6,10 @@
 	"author": "KiD Fearless",
 	"minimumCoreVersion": "0.5.5",
 	"compatibleCoreVersion": "0.7.9",
-	"scripts": ["kidfearless.foundry.rng.js"]
+	"esmodules": [
+		"dist/interfaces.js",
+		"dist/JsonRPC.js",
+		"dist/RandomAPI.js",
+		"dist/TrueRNG.js"
+	]
 }

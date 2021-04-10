@@ -1,10 +1,10 @@
 {
 	"compilerOptions": {
 	  "sourceMap": true,
-	  "module": "ES2020",
+	  "module": "esnext",
 	  "esModuleInterop": true,
 	  "experimentalDecorators": true,
-	  "target": "ES6",
+	  "target": "es2017",
 	  "jsx": "react",
 	  "strictPropertyInitialization": true,
 	  "strictNullChecks": true,
@@ -16,9 +16,8 @@
 		"es6",
 	  ],
 	  "alwaysStrict": true,
-	  "outDir": ".",
-	  "rootDir": "."
+	  "outDir": "./dist/",
+	  "rootDir": "./src/"
 	},
-	"files": ["./kidfearless.foundry.rng.ts"],
 	"compileOnSave": true
 }
