@@ -1,6 +1,5 @@
 import { RandomAPI } from "./RandomAPI.js";
 Hooks.once('init', () => {
-    console.log(`Init`);
     TrueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
     CONFIG.Dice.randomUniform = TrueRNG.GetRandomNumber;
     let params = {
@@ -11,11 +10,50 @@ Hooks.once('init', () => {
         type: String,
         default: "",
         onChange: value => {
-            console.log(`New API KEY: ${value}`);
             TrueRNG.UpdateAPIKey(value);
         }
     };
     game.settings.register("TrueRNG", "APIKEY", params);
+    params =
+        {
+            name: "Max Cached Numbers",
+            hint: "Number of random numbers to pull in per client. Keep this low if you reload your modules a lot. Keep it high if you tend to roll a lot of dice at once",
+            scope: "world",
+            config: true,
+            type: Number,
+            range: {
+                min: 10,
+                max: 200,
+                step: 1
+            },
+            default: 50,
+            onChange: value => {
+                TrueRNG.MaxCachedNumbers = parseInt(value);
+            }
+        };
+    game.settings.register("TrueRNG", "MAXCACHEDNUMBERS", params);
+    params =
+        {
+            name: "Update Point",
+            hint: "Grab more values when the number of cached dice rolls goes below this percentage of the max dice number.",
+            scope: "world",
+            config: true,
+            type: Number,
+            range: {
+                min: 1,
+                max: 100,
+                step: 1
+            },
+            default: 50,
+            onChange: value => {
+                TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
+            }
+        };
+    game.settings.register("TrueRNG", "UPDATEPOINT", params);
+    let maxCached = game.settings.get("TrueRNG", "MAXCACHEDNUMBERS");
+    TrueRNG.MaxCachedNumbers = parseInt(maxCached);
+    let updatePoint = game.settings.get("TrueRNG", "UPDATEPOINT");
+    TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
     let currentKey = game.settings.get("TrueRNG", "APIKEY");
     if (currentKey && currentKey.length) {
         TrueRNG.UpdateAPIKey(currentKey);
@@ -23,44 +61,39 @@ Hooks.once('init', () => {
 });
 class TrueRNG {
     static UpdateAPIKey(key) {
-        console.log(`UpdateAPIKey`);
         TrueRNG.RandomGenerator = new RandomAPI(key);
         TrueRNG.UpdateRandomNumbers();
     }
     static UpdateRandomNumbers() {
-        console.log(`UpdateRandomNumbers`);
         if (TrueRNG.AwaitingResponse) {
-            console.log(`\tAlready awaiting a response`);
             return;
         }
         TrueRNG.AwaitingResponse = true;
-        TrueRNG.RandomGenerator.GenerateDecimals({ decimalPlaces: 3, n: 20 })
+        TrueRNG.RandomGenerator.GenerateDecimals({ decimalPlaces: 5, n: TrueRNG.MaxCachedNumbers })
             .then((response) => {
-            console.log(`\tGot new random numbers`, response);
             TrueRNG.RandomNumbers = TrueRNG.RandomNumbers.concat(response.data);
         })
             .catch((reason) => {
-            console.log(`\tCaught exception ${reason}`);
         })
             .finally(() => {
-            console.log(`\tResetting awaiting response property`);
             TrueRNG.AwaitingResponse = false;
         });
     }
     static GetRandomNumber() {
-        console.log(`GetRandomNumber`);
         if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey) {
-            console.log(`\tBad API Key`);
             return TrueRNG.OriginalRandomFunction();
         }
-        if (TrueRNG.RandomNumbers.length == 0) {
-            console.log(`\tNo Random Numbers`);
+        if (!TrueRNG.RandomNumbers.length) {
             if (!TrueRNG.AwaitingResponse) {
                 TrueRNG.UpdateRandomNumbers();
             }
             return TrueRNG.OriginalRandomFunction();
         }
-        console.log(`\tSuccess`);
+        if ((TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers) < TrueRNG.UpdatePoint) {
+            if (!TrueRNG.AwaitingResponse) {
+                TrueRNG.UpdateRandomNumbers();
+            }
+        }
         if (TrueRNG.RandomNumbers.length <= 10) {
             TrueRNG.UpdateRandomNumbers();
         }
@@ -68,7 +101,6 @@ class TrueRNG {
         let index = ms % TrueRNG.RandomNumbers.length;
         let rng = TrueRNG.RandomNumbers[index];
         TrueRNG.RandomNumbers.splice(index, 1);
-        console.log(`\tReturning ${rng}`, rng, index, ms);
         return rng;
     }
 }
