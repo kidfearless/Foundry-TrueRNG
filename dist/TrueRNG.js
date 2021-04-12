@@ -81,6 +81,20 @@ class TrueRNG {
     }
     static GetRandomNumber() {
         if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey) {
+            if (!TrueRNG.HasAlerted) {
+                TrueRNG.HasAlerted = true;
+                let d = new Dialog({
+                    title: "WARNING MISSING API KEY",
+                    content: "You must set an api key in Module Settings for TrueRNG to function.",
+                    buttons: {
+                        ok: {
+                            label: "Ok",
+                        }
+                    },
+                    default: "ok",
+                });
+                d.render(true);
+            }
             return TrueRNG.OriginalRandomFunction();
         }
         if (!TrueRNG.RandomNumbers.length) {
@@ -105,4 +119,5 @@ class TrueRNG {
     }
 }
 TrueRNG.RandomNumbers = [];
+TrueRNG.HasAlerted = false;
 //# sourceMappingURL=TrueRNG.js.map

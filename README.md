@@ -2,7 +2,7 @@
 This module implements random.org's true random number generator service into the dice rolls of Foundry-VTT. In order to use the module you will need to generate a free api key from https://api.random.org/dashboard
 
 ## Tnstallation
-* Install the module using the following manifest url: [TODO]
+* Install the module using the following manifest url: https://raw.githubusercontent.com/kidfearless/Foundry-TrueRNG/master/module.json
 * As GameMaster go to the "Module Settings" tab inside "Configure Settings" and paste in your api key under "Random.org API Key"
 * Save Changes. The clients will now all start pulling in random numbers from random.org
 

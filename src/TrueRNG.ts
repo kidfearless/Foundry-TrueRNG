@@ -106,6 +106,7 @@ class TrueRNG
 	static AwaitingResponse: boolean;
 	static MaxCachedNumbers: number;
 	static UpdatePoint: number;
+	static HasAlerted: boolean = false;
 
 
 	public static UpdateAPIKey(key: string)
@@ -152,6 +153,25 @@ class TrueRNG
 
 		if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey)
 		{
+			if(!TrueRNG.HasAlerted)
+			{
+				TrueRNG.HasAlerted = true;
+				// @ts-ignore
+				let d:any = new Dialog({
+					title: "WARNING MISSING API KEY",
+					content: "You must set an api key in Module Settings for TrueRNG to function.",
+					buttons:
+					{
+						ok:
+						{
+							label: "Ok",
+						}
+					},
+					default: "ok",
+				});
+				d.render(true);
+			}
+
 			// console.log(`\tBad API Key`);
 
 			return TrueRNG.OriginalRandomFunction();
