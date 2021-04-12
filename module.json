@@ -11,5 +11,10 @@
 		"dist/JsonRPC.js",
 		"dist/RandomAPI.js",
 		"dist/TrueRNG.js"
-	]
+	],
+	"readme": "https://raw.githubusercontent.com/kidfearless/Foundry-TrueRNG/master/README.md",
+	"bugs": "https://github.com/kidfearless/Foundry-TrueRNG/issues",
+	"url": "https://github.com/kidfearless/Foundry-TrueRNG",
+	"manifest": "https://raw.githubusercontent.com/kidfearless/Foundry-TrueRNG/master/module.json"
+
 }

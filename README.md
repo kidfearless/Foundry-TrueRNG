@@ -24,3 +24,7 @@ The random numbers are stored in an array and are unique for each client as it t
 Once the client rolls a dice it will get the current time in milliseconds and modulus it by the length of the current cached values. 
 I did this because I didn't like the idea of a players role being predetermined at the start of each game. 
 This at least makes it so that the rolls you get are determined at the start, the order that you get them is random.
+
+
+If you like this repo and want to support me you can always buy me a pizza 😁
+<a href="https://www.buymeacoffee.com/kidfearless" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
