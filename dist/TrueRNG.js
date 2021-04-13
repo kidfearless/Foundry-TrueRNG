@@ -1,5 +1,6 @@
 import { RandomAPI } from "./RandomAPI.js";
 Hooks.once('init', () => {
+    DebugLog(`Init`);
     TrueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
     CONFIG.Dice.randomUniform = TrueRNG.GetRandomNumber;
     let params = {
@@ -10,6 +11,7 @@ Hooks.once('init', () => {
         type: String,
         default: "",
         onChange: value => {
+            DebugLog(`New API KEY: ${value}`);
             TrueRNG.UpdateAPIKey(value);
         }
     };
@@ -28,6 +30,7 @@ Hooks.once('init', () => {
             },
             default: 50,
             onChange: value => {
+                DebugLog(`New Max Cached Numbers: ${value}`);
                 TrueRNG.MaxCachedNumbers = parseInt(value);
             }
         };
@@ -46,10 +49,21 @@ Hooks.once('init', () => {
             },
             default: 50,
             onChange: value => {
+                DebugLog(`New Update Point: ${value}`);
                 TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
             }
         };
     game.settings.register("TrueRNG", "UPDATEPOINT", params);
+    params =
+        {
+            name: "Print Debug Messages",
+            hint: "Print debug messages to console",
+            scope: "world",
+            config: true,
+            type: Boolean,
+            default: true
+        };
+    game.settings.register("TrueRNG", "DEBUG", params);
     let maxCached = game.settings.get("TrueRNG", "MAXCACHEDNUMBERS");
     TrueRNG.MaxCachedNumbers = parseInt(maxCached);
     let updatePoint = game.settings.get("TrueRNG", "UPDATEPOINT");
@@ -61,25 +75,33 @@ Hooks.once('init', () => {
 });
 class TrueRNG {
     static UpdateAPIKey(key) {
+        console.group();
+        DebugLog(`UpdateAPIKey`);
         TrueRNG.RandomGenerator = new RandomAPI(key);
         TrueRNG.UpdateRandomNumbers();
     }
     static UpdateRandomNumbers() {
+        DebugLog(`UpdateRandomNumbers`);
         if (TrueRNG.AwaitingResponse) {
+            DebugLog(`\tAlready awaiting a response`);
             return;
         }
         TrueRNG.AwaitingResponse = true;
         TrueRNG.RandomGenerator.GenerateDecimals({ decimalPlaces: 5, n: TrueRNG.MaxCachedNumbers })
             .then((response) => {
+            DebugLog(`\tGot new random numbers`, response);
             TrueRNG.RandomNumbers = TrueRNG.RandomNumbers.concat(response.data);
         })
             .catch((reason) => {
+            DebugLog(`\tCaught exception ${reason}`, reason);
         })
             .finally(() => {
+            DebugLog(`\tResetting awaiting response property`);
             TrueRNG.AwaitingResponse = false;
         });
     }
     static GetRandomNumber() {
+        DebugLog(`GetRandomNumber`);
         if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey) {
             if (!TrueRNG.HasAlerted) {
                 TrueRNG.HasAlerted = true;
@@ -95,19 +117,24 @@ class TrueRNG {
                 });
                 d.render(true);
             }
+            DebugLog(`\tBad API Key`);
             return TrueRNG.OriginalRandomFunction();
         }
         if (!TrueRNG.RandomNumbers.length) {
+            DebugLog(`\tNo Random Numbers`);
             if (!TrueRNG.AwaitingResponse) {
                 TrueRNG.UpdateRandomNumbers();
             }
             return TrueRNG.OriginalRandomFunction();
         }
+        DebugLog(`max: ${TrueRNG.MaxCachedNumbers} update: ${TrueRNG.UpdatePoint} val: ${TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers}`);
         if ((TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers) < TrueRNG.UpdatePoint) {
+            DebugLog(`\tLimited Random Numbers Available`);
             if (!TrueRNG.AwaitingResponse) {
                 TrueRNG.UpdateRandomNumbers();
             }
         }
+        DebugLog(`\tSuccess`);
         if (TrueRNG.RandomNumbers.length <= 10) {
             TrueRNG.UpdateRandomNumbers();
         }
@@ -115,9 +142,24 @@ class TrueRNG {
         let index = ms % TrueRNG.RandomNumbers.length;
         let rng = TrueRNG.RandomNumbers[index];
         TrueRNG.RandomNumbers.splice(index, 1);
+        DebugLog(`\tReturning ${rng}`, rng, index, ms);
         return rng;
     }
 }
 TrueRNG.RandomNumbers = [];
 TrueRNG.HasAlerted = false;
+export class Debug {
+    get() {
+        return game.settings.get("TrueRNG", "DEBUG");
+    }
+    static Log(message, ...params) {
+        if (Debug)
+            ;
+    }
+}
+function DebugLog(message, ...params) {
+    if (game.settings.get("TrueRNG", "DEBUG")) {
+        console.log(message, params);
+    }
+}
 //# sourceMappingURL=TrueRNG.js.map

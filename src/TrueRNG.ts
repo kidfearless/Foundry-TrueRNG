@@ -1,13 +1,14 @@
+import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
 
 declare var Hooks;
-declare var game;
+export declare var game;
 declare var CONFIG;
 
 
 Hooks.once('init', () =>
 {
-	// console.log(`Init`);
+	Debug.WriteLine(`Init`);
 
 	// cache the original random func, and overwrite it.
 	// WARNING: CONFIG.Dice.randomUniform is a client sided function.
@@ -26,7 +27,7 @@ Hooks.once('init', () =>
 		default: "",         // The default value for the setting
 		onChange: value => 
 		{
-			// console.log(`New API KEY: ${value}`);
+			Debug.WriteLine(`New API KEY: ${value}`);
 			TrueRNG.UpdateAPIKey(value);
 		}
 	};
@@ -48,7 +49,7 @@ Hooks.once('init', () =>
 		default: 50,         // The default value for the setting
 		onChange: value => 
 		{
-			// console.log(`New Max Cached Numbers: ${value}`);
+			Debug.WriteLine(`New Max Cached Numbers: ${value}`);
 			TrueRNG.MaxCachedNumbers = parseInt(value);
 		}
 	};
@@ -72,7 +73,7 @@ Hooks.once('init', () =>
 		default: 50,         // The default value for the setting
 		onChange: value => 
 		{
-			// console.log(`New Update Point: ${value}`);
+			Debug.WriteLine(`New Update Point: ${value}`);
 			TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
 
 		}
@@ -80,6 +81,20 @@ Hooks.once('init', () =>
 
 	game.settings.register("TrueRNG", "UPDATEPOINT", params);
 	// #endregion
+
+	// #region Update Point
+		params = 
+		{
+			name: "Print Debug Messages",
+			hint: "Print debug messages to console",
+			scope: "world",      // This specifies a world-level setting
+			config: true,        // This specifies that the setting appears in the configuration view
+			type: Boolean,
+			default: true         // The default value for the setting
+		};
+	
+		game.settings.register("TrueRNG", "DEBUG", params);
+		// #endregion
 
 	let maxCached = game.settings.get("TrueRNG", "MAXCACHEDNUMBERS");
 	TrueRNG.MaxCachedNumbers = parseInt(maxCached);
@@ -111,7 +126,8 @@ class TrueRNG
 
 	public static UpdateAPIKey(key: string)
 	{
-		// console.log(`UpdateAPIKey`);
+		console.group()
+		Debug.WriteLine(`UpdateAPIKey`);
 
 		TrueRNG.RandomGenerator = new RandomAPI(key);
 		TrueRNG.UpdateRandomNumbers();
@@ -119,12 +135,12 @@ class TrueRNG
 
 	public static UpdateRandomNumbers()
 	{
-		// console.log(`UpdateRandomNumbers`);
+		Debug.WriteLine(`UpdateRandomNumbers`);
 
 		// don't do multiple api calls at once
 		if (TrueRNG.AwaitingResponse)
 		{
-			// console.log(`\tAlready awaiting a response`);
+			Debug.WriteLine(`\tAlready awaiting a response`);
 			return;
 		}
 
@@ -132,24 +148,23 @@ class TrueRNG
 		TrueRNG.RandomGenerator.GenerateDecimals({ decimalPlaces: 5, n: TrueRNG.MaxCachedNumbers })
 		.then((response) =>
 		{
-			// console.log(`\tGot new random numbers`, response);
+			Debug.WriteLine(`\tGot new random numbers`, response);
 			TrueRNG.RandomNumbers = TrueRNG.RandomNumbers.concat(response.data);
 		})
 		.catch((reason) =>
 		{
-			// console.log(`\tCaught exception ${reason}`, reason);
-			// console.trace();
+			Debug.WriteLine(`\tCaught exception ${reason}`, reason);
 		})
 		.finally(() => 
 		{
-			// console.log(`\tResetting awaiting response property`);
+			Debug.WriteLine(`\tResetting awaiting response property`);
 			TrueRNG.AwaitingResponse = false;
 		});
 
 	}
 	public static GetRandomNumber()
 	{
-		// console.log(`GetRandomNumber`);
+		Debug.WriteLine(`GetRandomNumber`);
 
 		if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey)
 		{
@@ -172,14 +187,14 @@ class TrueRNG
 				d.render(true);
 			}
 
-			// console.log(`\tBad API Key`);
+			Debug.WriteLine(`\tBad API Key`);
 
 			return TrueRNG.OriginalRandomFunction();
 		}
 
 		if(!TrueRNG.RandomNumbers.length)
 		{
-			// console.log(`\tNo Random Numbers`);
+			Debug.WriteLine(`\tNo Random Numbers`);
 			if (!TrueRNG.AwaitingResponse)
 			{
 				TrueRNG.UpdateRandomNumbers();
@@ -188,11 +203,11 @@ class TrueRNG
 			return TrueRNG.OriginalRandomFunction();
 		}
 
-		// console.log(`max: ${TrueRNG.MaxCachedNumbers} update: ${TrueRNG.UpdatePoint} val: ${TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers}`);
+		Debug.WriteLine(`max: ${TrueRNG.MaxCachedNumbers} update: ${TrueRNG.UpdatePoint} val: ${TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers}`);
 
 		if ((TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers) < TrueRNG.UpdatePoint)
 		{
-			// console.log(`\tLimited Random Numbers Available`);
+			Debug.WriteLine(`\tLimited Random Numbers Available`);
 
 			if (!TrueRNG.AwaitingResponse)
 			{
@@ -200,7 +215,7 @@ class TrueRNG
 			}
 		}
 
-		// console.log(`\tSuccess`);
+		Debug.WriteLine(`\tSuccess`);
 
 
 		if (TrueRNG.RandomNumbers.length <= 10)
@@ -223,7 +238,7 @@ class TrueRNG
 		// remove that item from the array
 		TrueRNG.RandomNumbers.splice(index, 1);
 
-		// console.log(`\tReturning ${rng}`, rng, index, ms);
+		Debug.WriteLine(`\tReturning ${rng}`, rng, index, ms);
 
 		// return the item
 		return rng;
