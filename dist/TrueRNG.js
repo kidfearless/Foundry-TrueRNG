@@ -1,9 +1,115 @@
 import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
+class ResultHolder {
+    constructor(result) {
+        this.Result = result;
+    }
+}
+class TrueRNG {
+    constructor() {
+        this.RandomNumbers = [];
+        this.RandomGenerator = null;
+        this.OriginalRandomFunction = null;
+        this.PreRNGEventHandler = null;
+        this.PostRNGEventHandler = null;
+        this.AwaitingResponse = false;
+        this.MaxCachedNumbers = 50;
+        this.UpdatePoint = 0.5;
+        this.HasAlerted = false;
+        this.Enabled = true;
+    }
+    UpdateAPIKey(key) {
+        Debug.Group(`UpdateAPIKey`);
+        this.RandomGenerator = new RandomAPI(key);
+        this.UpdateRandomNumbers();
+        Debug.GroupEnd();
+    }
+    UpdateRandomNumbers() {
+        Debug.Group(`UpdateRandomNumbers`);
+        if (!this.Enabled) {
+            Debug.WriteLine(`Module Disabled...Returning early`);
+            return;
+        }
+        if (this.AwaitingResponse) {
+            Debug.WriteLine(`Already awaiting a response`);
+            return;
+        }
+        this.AwaitingResponse = true;
+        this.RandomGenerator.GenerateDecimals({ decimalPlaces: 5, n: this.MaxCachedNumbers })
+            .then((response) => {
+            Debug.WriteLine(`Got new random numbers`, response);
+            this.RandomNumbers = this.RandomNumbers.concat(response.data);
+        })
+            .catch((reason) => {
+            Debug.WriteLine(`Caught exception ${reason}`, reason);
+        })
+            .finally(() => {
+            Debug.WriteLine(`Resetting awaiting response property`);
+            this.AwaitingResponse = false;
+        });
+        Debug.GroupEnd();
+    }
+    GetRandomNumber() {
+        Debug.Group(`GetRandomNumber`);
+        if (!this.Enabled) {
+            Debug.WriteLine(`trueRNG disabled, returning original function.`);
+            Debug.GroupEnd();
+            return this.OriginalRandomFunction();
+        }
+        if (!this.RandomGenerator || !this.RandomGenerator.ApiKey) {
+            if (!this.HasAlerted) {
+                this.HasAlerted = true;
+                let d = new Dialog({
+                    title: "WARNING MISSING API KEY",
+                    content: "You must set an api key in Module Settings for trueRNG to function.",
+                    buttons: {
+                        ok: {
+                            label: "Ok",
+                        }
+                    },
+                    default: "ok",
+                });
+                d.render(true);
+            }
+            Debug.WriteLine(`Bad API Key`);
+            Debug.GroupEnd();
+            return this.OriginalRandomFunction();
+        }
+        if (!this.RandomNumbers.length) {
+            Debug.WriteLine(`No Random Numbers`);
+            if (!this.AwaitingResponse) {
+                this.UpdateRandomNumbers();
+            }
+            Debug.GroupEnd();
+            return this.OriginalRandomFunction();
+        }
+        Debug.WriteLine(`max: ${this.MaxCachedNumbers} update: ${this.UpdatePoint} val: ${this.RandomNumbers.length / this.MaxCachedNumbers}`);
+        if ((this.RandomNumbers.length / this.MaxCachedNumbers) < this.UpdatePoint) {
+            Debug.WriteLine(`Limited Random Numbers Available`);
+            this.UpdateRandomNumbers();
+        }
+        Debug.WriteLine(`Success`);
+        let rng = this.RandomNumber();
+        Debug.GroupEnd();
+        return rng;
+    }
+    RandomNumber() {
+        Debug.Group(`RandomNumber`);
+        let ms = new Date().getTime();
+        let index = ms % this.RandomNumbers.length;
+        let rng = this.RandomNumbers[index];
+        this.RandomNumbers.splice(index, 1);
+        Debug.WriteLine(`Returning ${rng}`, rng, index, ms);
+        Debug.GroupEnd();
+        return rng;
+    }
+}
+let trueRNG = new TrueRNG();
+Window["TrueRNG"] = trueRNG;
 Hooks.once('init', () => {
     Debug.Group(`Init Callback`);
-    TrueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
-    CONFIG.Dice.randomUniform = TrueRNG.GetRandomNumber;
+    trueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
+    CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber;
     let params = {
         name: "Random.org API Key",
         hint: "Put your developer key from https://api.random.org/dashboard here",
@@ -13,10 +119,10 @@ Hooks.once('init', () => {
         default: "",
         onChange: value => {
             Debug.WriteLine(`New API KEY: ${value}`);
-            TrueRNG.UpdateAPIKey(value);
+            trueRNG.UpdateAPIKey(value);
         }
     };
-    game.settings.register("TrueRNG", "APIKEY", params);
+    game.settings.register("trueRNG", "APIKEY", params);
     params =
         {
             name: "Max Cached Numbers",
@@ -32,10 +138,10 @@ Hooks.once('init', () => {
             default: 50,
             onChange: (value) => {
                 Debug.WriteLine(`New Max Cached Numbers: ${value}`);
-                TrueRNG.MaxCachedNumbers = value;
+                trueRNG.MaxCachedNumbers = value;
             }
         };
-    game.settings.register("TrueRNG", "MAXCACHEDNUMBERS", params);
+    game.settings.register("trueRNG", "MAXCACHEDNUMBERS", params);
     params =
         {
             name: "Update Point",
@@ -51,10 +157,10 @@ Hooks.once('init', () => {
             default: 50,
             onChange: (value) => {
                 Debug.WriteLine(`New Update Point: ${value}`);
-                TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
+                trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
             }
         };
-    game.settings.register("TrueRNG", "UPDATEPOINT", params);
+    game.settings.register("trueRNG", "UPDATEPOINT", params);
     params =
         {
             name: "Print Debug Messages",
@@ -67,7 +173,7 @@ Hooks.once('init', () => {
             },
             default: true
         };
-    game.settings.register("TrueRNG", "DEBUG", params);
+    game.settings.register("trueRNG", "DEBUG", params);
     params =
         {
             name: "Enabled",
@@ -77,103 +183,19 @@ Hooks.once('init', () => {
             type: Boolean,
             onchange: (value) => {
                 Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
-                TrueRNG.Enabled = value;
+                trueRNG.Enabled = value;
             },
             default: true
         };
-    game.settings.register("TrueRNG", "ENABLED", params);
-    let maxCached = game.settings.get("TrueRNG", "MAXCACHEDNUMBERS");
-    TrueRNG.MaxCachedNumbers = parseInt(maxCached);
-    let updatePoint = game.settings.get("TrueRNG", "UPDATEPOINT");
-    TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
-    let currentKey = game.settings.get("TrueRNG", "APIKEY");
+    game.settings.register("trueRNG", "ENABLED", params);
+    let maxCached = game.settings.get("trueRNG", "MAXCACHEDNUMBERS");
+    trueRNG.MaxCachedNumbers = parseInt(maxCached);
+    let updatePoint = game.settings.get("trueRNG", "UPDATEPOINT");
+    trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
+    let currentKey = game.settings.get("trueRNG", "APIKEY");
     if (currentKey && currentKey.length) {
-        TrueRNG.UpdateAPIKey(currentKey);
+        trueRNG.UpdateAPIKey(currentKey);
     }
     Debug.GroupEnd();
 });
-class TrueRNG {
-    static UpdateAPIKey(key) {
-        Debug.Group(`UpdateAPIKey`);
-        TrueRNG.RandomGenerator = new RandomAPI(key);
-        TrueRNG.UpdateRandomNumbers();
-        Debug.GroupEnd();
-    }
-    static UpdateRandomNumbers() {
-        Debug.Group(`UpdateRandomNumbers`);
-        if (TrueRNG.AwaitingResponse) {
-            Debug.WriteLine(`\tAlready awaiting a response`);
-            return;
-        }
-        TrueRNG.AwaitingResponse = true;
-        TrueRNG.RandomGenerator.GenerateDecimals({ decimalPlaces: 5, n: TrueRNG.MaxCachedNumbers })
-            .then((response) => {
-            Debug.WriteLine(`\tGot new random numbers`, response);
-            TrueRNG.RandomNumbers = TrueRNG.RandomNumbers.concat(response.data);
-        })
-            .catch((reason) => {
-            Debug.WriteLine(`\tCaught exception ${reason}`, reason);
-        })
-            .finally(() => {
-            Debug.WriteLine(`\tResetting awaiting response property`);
-            TrueRNG.AwaitingResponse = false;
-        });
-        Debug.GroupEnd();
-    }
-    static GetRandomNumber() {
-        Debug.Group(`GetRandomNumber`);
-        if (!TrueRNG.Enabled) {
-            Debug.WriteLine(`TrueRNG disabled, returning original function.`);
-            Debug.GroupEnd();
-            return TrueRNG.OriginalRandomFunction();
-        }
-        if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey) {
-            if (!TrueRNG.HasAlerted) {
-                TrueRNG.HasAlerted = true;
-                let d = new Dialog({
-                    title: "WARNING MISSING API KEY",
-                    content: "You must set an api key in Module Settings for TrueRNG to function.",
-                    buttons: {
-                        ok: {
-                            label: "Ok",
-                        }
-                    },
-                    default: "ok",
-                });
-                d.render(true);
-            }
-            Debug.WriteLine(`\tBad API Key`);
-            Debug.GroupEnd();
-            return TrueRNG.OriginalRandomFunction();
-        }
-        if (!TrueRNG.RandomNumbers.length) {
-            Debug.WriteLine(`\tNo Random Numbers`);
-            if (!TrueRNG.AwaitingResponse) {
-                TrueRNG.UpdateRandomNumbers();
-            }
-            Debug.GroupEnd();
-            return TrueRNG.OriginalRandomFunction();
-        }
-        Debug.WriteLine(`max: ${TrueRNG.MaxCachedNumbers} update: ${TrueRNG.UpdatePoint} val: ${TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers}`);
-        if ((TrueRNG.RandomNumbers.length / TrueRNG.MaxCachedNumbers) < TrueRNG.UpdatePoint) {
-            Debug.WriteLine(`\tLimited Random Numbers Available`);
-            if (!TrueRNG.AwaitingResponse) {
-                TrueRNG.UpdateRandomNumbers();
-            }
-        }
-        Debug.WriteLine(`\tSuccess`);
-        if (TrueRNG.RandomNumbers.length <= 10) {
-            TrueRNG.UpdateRandomNumbers();
-        }
-        let ms = new Date().getTime();
-        let index = ms % TrueRNG.RandomNumbers.length;
-        let rng = TrueRNG.RandomNumbers[index];
-        TrueRNG.RandomNumbers.splice(index, 1);
-        Debug.WriteLine(`\tReturning ${rng}`, rng, index, ms);
-        Debug.GroupEnd();
-        return rng;
-    }
-}
-TrueRNG.RandomNumbers = [];
-TrueRNG.HasAlerted = false;
 //# sourceMappingURL=TrueRNG.js.map
