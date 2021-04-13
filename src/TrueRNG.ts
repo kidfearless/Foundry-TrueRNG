@@ -8,7 +8,7 @@ declare var CONFIG;
 
 Hooks.once('init', () =>
 {
-	Debug.WriteLine(`Init`);
+	Debug.Group(`Init Callback`);
 
 	// cache the original random func, and overwrite it.
 	// WARNING: CONFIG.Dice.randomUniform is a client sided function.
@@ -47,10 +47,10 @@ Hooks.once('init', () =>
 			step: 1
 		},
 		default: 50,         // The default value for the setting
-		onChange: value => 
+		onChange: (value: number) => 
 		{
 			Debug.WriteLine(`New Max Cached Numbers: ${value}`);
-			TrueRNG.MaxCachedNumbers = parseInt(value);
+			TrueRNG.MaxCachedNumbers = value
 		}
 	};
 
@@ -71,30 +71,52 @@ Hooks.once('init', () =>
 			step: 1
 		},
 		default: 50,         // The default value for the setting
-		onChange: value => 
+		onChange: (value: number) => 
 		{
 			Debug.WriteLine(`New Update Point: ${value}`);
 			TrueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
-
 		}
 	};
 
 	game.settings.register("TrueRNG", "UPDATEPOINT", params);
 	// #endregion
 
-	// #region Update Point
-		params = 
+	// #region Debug Messages
+	params = 
+	{
+		name: "Print Debug Messages",
+		hint: "Print debug messages to console",
+		scope: "world",      // This specifies a world-level setting
+		config: true,        // This specifies that the setting appears in the configuration view
+		type: Boolean,
+		onChange: (value: boolean) => 
 		{
-			name: "Print Debug Messages",
-			hint: "Print debug messages to console",
-			scope: "world",      // This specifies a world-level setting
-			config: true,        // This specifies that the setting appears in the configuration view
-			type: Boolean,
-			default: true         // The default value for the setting
-		};
-	
-		game.settings.register("TrueRNG", "DEBUG", params);
-		// #endregion
+			Debug.WriteLine(`New Debug Mode: ${value}`);
+		},
+		default: true         // The default value for the setting
+	};
+
+	game.settings.register("TrueRNG", "DEBUG", params);
+	// #endregion
+
+	// #region Enabled Setting
+	params = 
+	{
+		name: "Enabled",
+		hint: "Enables/Disables the module",
+		scope: "world",      // This specifies a world-level setting
+		config: true,        // This specifies that the setting appears in the configuration view
+		type: Boolean,
+		onchange: (value:boolean) =>
+		{
+			Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
+			TrueRNG.Enabled = value;
+		},
+		default: true         // The default value for the setting
+	};
+
+	game.settings.register("TrueRNG", "ENABLED", params);
+	// #endregion
 
 	let maxCached = game.settings.get("TrueRNG", "MAXCACHEDNUMBERS");
 	TrueRNG.MaxCachedNumbers = parseInt(maxCached);
@@ -108,8 +130,7 @@ Hooks.once('init', () =>
 	{
 		TrueRNG.UpdateAPIKey(currentKey);
 	}
-
-
+	Debug.GroupEnd();
 });
 
 class TrueRNG
@@ -122,20 +143,21 @@ class TrueRNG
 	static MaxCachedNumbers: number;
 	static UpdatePoint: number;
 	static HasAlerted: boolean = false;
+	static Enabled: boolean;
 
 
 	public static UpdateAPIKey(key: string)
 	{
-		console.group()
-		Debug.WriteLine(`UpdateAPIKey`);
+		Debug.Group(`UpdateAPIKey`);
 
 		TrueRNG.RandomGenerator = new RandomAPI(key);
 		TrueRNG.UpdateRandomNumbers();
+		Debug.GroupEnd();
 	}
 
 	public static UpdateRandomNumbers()
 	{
-		Debug.WriteLine(`UpdateRandomNumbers`);
+		Debug.Group(`UpdateRandomNumbers`);
 
 		// don't do multiple api calls at once
 		if (TrueRNG.AwaitingResponse)
@@ -160,11 +182,19 @@ class TrueRNG
 			Debug.WriteLine(`\tResetting awaiting response property`);
 			TrueRNG.AwaitingResponse = false;
 		});
-
+		
+		Debug.GroupEnd();
 	}
 	public static GetRandomNumber()
 	{
-		Debug.WriteLine(`GetRandomNumber`);
+		Debug.Group(`GetRandomNumber`);
+
+		if(!TrueRNG.Enabled)
+		{
+			Debug.WriteLine(`TrueRNG disabled, returning original function.`);
+			Debug.GroupEnd();
+			return TrueRNG.OriginalRandomFunction();
+		}
 
 		if (!TrueRNG.RandomGenerator || !TrueRNG.RandomGenerator.ApiKey)
 		{
@@ -188,6 +218,7 @@ class TrueRNG
 			}
 
 			Debug.WriteLine(`\tBad API Key`);
+			Debug.GroupEnd();
 
 			return TrueRNG.OriginalRandomFunction();
 		}
@@ -199,6 +230,7 @@ class TrueRNG
 			{
 				TrueRNG.UpdateRandomNumbers();
 			}
+			Debug.GroupEnd();
 
 			return TrueRNG.OriginalRandomFunction();
 		}
@@ -239,6 +271,7 @@ class TrueRNG
 		TrueRNG.RandomNumbers.splice(index, 1);
 
 		Debug.WriteLine(`\tReturning ${rng}`, rng, index, ms);
+		Debug.GroupEnd();
 
 		// return the item
 		return rng;

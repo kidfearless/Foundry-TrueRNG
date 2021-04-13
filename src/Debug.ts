@@ -3,14 +3,28 @@ export class Debug
 {
 	public static get Enabled()
 	{
-		return game.settings.get("TrueRNG", "DEBUG");
+		try
+		{
+			return game.settings.get("TrueRNG", "DEBUG");
+		}
+		catch
+		{
+			return true;
+		}
 	}
 
-	public static WriteLine(message, ...params)
+	public static WriteLine(message:any, ...params:any[])
 	{
 		if (Debug.Enabled)
 		{
-			console.log(message, params);
+			if(params.length)
+			{
+				console.log("TrueRNG | " + message, params);
+			}
+			else
+			{
+				console.log("TrueRNG | " + message);
+			}
 		}
 	}
 
@@ -22,7 +36,7 @@ export class Debug
 		}
 	}
 
-	public static GroupCollapsed(message, ...params)
+	public static GroupCollapsed(message)
 	{
 		if (Debug.Enabled)
 		{
