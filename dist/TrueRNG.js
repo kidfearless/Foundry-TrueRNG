@@ -115,8 +115,8 @@ export class TrueRNG {
         return rng;
     }
 }
-let trueRNG = new TrueRNG();
-Window["TrueRNG"] = trueRNG;
+var trueRNG = new TrueRNG();
+globalThis.TrueRNG = trueRNG;
 Hooks.once('init', () => {
     Debug.Group(`Init Callback`);
     trueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;

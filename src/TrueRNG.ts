@@ -192,9 +192,8 @@ export class TrueRNG
 	}
 }
 
-
-let trueRNG = new TrueRNG();
-Window["TrueRNG"] = trueRNG;
+var trueRNG = new TrueRNG();
+globalThis.TrueRNG = trueRNG;
 
 Hooks.once('init', () =>
 {
