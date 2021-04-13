@@ -11,6 +11,8 @@
 	  "strictBindCallApply": true,
 	  "removeComments": true,
 	  "pretty": true,
+	  "declaration": true,
+	  "declarationDir": "./declarations/",
 	  "lib": [
 		"dom",
 		"es6",

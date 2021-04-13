@@ -1,47 +1,25 @@
 import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
 import { JsonRPCRequest } from './JsonRPC';
+import { PreRNGEvent, PostRNGEvent, RNGFunction, Ref } from './Types.js';
 
 declare var Hooks;
 declare var game;
 declare var CONFIG;
 
-type RNGFunction =
-{
-	(): number;
-};
-type PreRNGEvent =
-{
-	(originalFunc:RNGFunction): boolean|undefined;
-};
-
-
-class ResultHolder
-{
-	public Result:number;
-	constructor(result:number)
-	{
-		this.Result = result;
-	}
-}
-
-type PostRNGEvent =
-{
-	(resultReference:ResultHolder):void
-};
-
-class TrueRNG
+export class TrueRNG
 {
 	public RandomNumbers: number[] = [];
-	public RandomGenerator: RandomAPI|null = null;
+	public RandomGenerator: RandomAPI | null = null;
 	public AwaitingResponse: boolean;
 	public MaxCachedNumbers: number;
 	public UpdatePoint: number;
 	public HasAlerted: boolean;
 	public Enabled: boolean;
-	public OriginalRandomFunction: Function|null = null;
-	public PreRNGEventHandler: PreRNGEvent|null = null;
-	public PostRNGEventHandler: PostRNGEvent|null = null;
+	public OriginalRandomFunction: RNGFunction = Math.random;
+	public PreRNGEventHandler: PreRNGEvent | null = null;
+	public PostRNGEventHandler: PostRNGEvent | null = null;
+	public LastRandomNumber: number;
 
 	constructor()
 	{
@@ -50,9 +28,10 @@ class TrueRNG
 		this.UpdatePoint = 0.5;
 		this.HasAlerted = false;
 		this.Enabled = true;
+		this.LastRandomNumber = Math.random();
 	}
-	
-	
+
+
 	public UpdateAPIKey(key: string): void
 	{
 		Debug.Group(`UpdateAPIKey`);
@@ -104,7 +83,7 @@ class TrueRNG
 
 		if (!this.Enabled)
 		{
-			Debug.WriteLine(`trueRNG disabled, returning original function.`);
+			Debug.WriteLine(`TrueRNG disabled, returning original function.`);
 			Debug.GroupEnd();
 			return this.OriginalRandomFunction!();
 		}
@@ -148,6 +127,20 @@ class TrueRNG
 			return this.OriginalRandomFunction!();
 		}
 
+		let rngFunction = this.PopRandomNumber;
+		if(this.PreRNGEventHandler)
+		{
+			Debug.Group(`Pre Event Handler`);
+			let ref = new Ref<RNGFunction>(rngFunction);
+			if(this.PreRNGEventHandler(this, ref))
+			{
+				return this.OriginalRandomFunction();
+			}
+			rngFunction = ref.Reference;
+			Debug.GroupEnd();
+		}
+
+
 		Debug.WriteLine(`max: ${this.MaxCachedNumbers} update: ${this.UpdatePoint} val: ${this.RandomNumbers.length / this.MaxCachedNumbers}`);
 
 		if ((this.RandomNumbers.length / this.MaxCachedNumbers) < this.UpdatePoint)
@@ -157,20 +150,29 @@ class TrueRNG
 			this.UpdateRandomNumbers();
 		}
 
+
+
 		Debug.WriteLine(`Success`);
 
-		let rng = this.RandomNumber();
+		let rng = new Ref(rngFunction());
+
+		if(this.PostRNGEventHandler)
+		{
+			this.PostRNGEventHandler(this, rng);
+		}
+
+		this.LastRandomNumber = rng.Reference;
 
 
-		
+
 		Debug.GroupEnd();
 		// return the item
-		return rng;
+		return this.LastRandomNumber;
 	}
 
-	public RandomNumber(): number
+	public PopRandomNumber(): number
 	{
-		Debug.Group(`RandomNumber`);
+		Debug.Group(`PopRandomNumber`);
 		// I don't like the idea that by retrieving all the random numbers at the start that our rolls are predetermined.
 		// So the number I grab from the array is based off the current time. 
 		// That way every millisecond that passes means that you are getting a different number.

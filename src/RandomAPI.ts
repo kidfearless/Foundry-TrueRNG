@@ -3,11 +3,11 @@ import { JsonRPCRequest } from './JsonRPC.js';
 import { JsonRPCResponse } from './JsonRPC.js';
 export class RandomAPI
 {
-	ApiKey: string = "https://api.random.org/json-rpc/4/invoke";
-	EndPoint: string;
-	BitsLeft: number = Number.MAX_SAFE_INTEGER;
-	BitsUsed: number = 0;
-	RequestsLeft: number = Number.MAX_SAFE_INTEGER;
+	public ApiKey: string;
+	public EndPoint: string;
+	public BitsLeft: number = Number.MAX_SAFE_INTEGER;
+	public BitsUsed: number = 0;
+	public RequestsLeft: number = Number.MAX_SAFE_INTEGER;
 
 	/**
 	 * Creates an instance of RandomAPI with the given random.org api key.

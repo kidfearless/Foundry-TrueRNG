@@ -1,7 +1,6 @@
 import { JsonRPCRequest } from './JsonRPC.js';
 export class RandomAPI {
     constructor(apiKey, endPoint = "https://api.random.org/json-rpc/4/invoke") {
-        this.ApiKey = "https://api.random.org/json-rpc/4/invoke";
         this.BitsLeft = Number.MAX_SAFE_INTEGER;
         this.BitsUsed = 0;
         this.RequestsLeft = Number.MAX_SAFE_INTEGER;

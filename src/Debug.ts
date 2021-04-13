@@ -1,7 +1,7 @@
 declare var game:any;
 export class Debug
 {
-	public static get Enabled()
+	public static get Enabled(): boolean
 	{
 		try
 		{
@@ -13,7 +13,7 @@ export class Debug
 		}
 	}
 
-	public static WriteLine(message:any, ...params:any[])
+	public static WriteLine(message:any, ...params:any[]): void
 	{
 		if (Debug.Enabled)
 		{
@@ -28,7 +28,7 @@ export class Debug
 		}
 	}
 
-	public static Group(message)
+	public static Group(message:any):void
 	{
 		if (Debug.Enabled)
 		{
@@ -36,14 +36,14 @@ export class Debug
 		}
 	}
 
-	public static GroupCollapsed(message)
+	public static GroupCollapsed(message: any):void
 	{
 		if (Debug.Enabled)
 		{
 			console.groupCollapsed(message);
 		}
 	}
-	public static GroupEnd()
+	public static GroupEnd():void
 	{
 		if (Debug.Enabled)
 		{

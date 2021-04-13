@@ -1,15 +1,11 @@
 import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
-class ResultHolder {
-    constructor(result) {
-        this.Result = result;
-    }
-}
-class TrueRNG {
+import { Ref } from './Types.js';
+export class TrueRNG {
     constructor() {
         this.RandomNumbers = [];
         this.RandomGenerator = null;
-        this.OriginalRandomFunction = null;
+        this.OriginalRandomFunction = Math.random;
         this.PreRNGEventHandler = null;
         this.PostRNGEventHandler = null;
         this.AwaitingResponse = false;
@@ -17,6 +13,7 @@ class TrueRNG {
         this.UpdatePoint = 0.5;
         this.HasAlerted = false;
         this.Enabled = true;
+        this.LastRandomNumber = Math.random();
     }
     UpdateAPIKey(key) {
         Debug.Group(`UpdateAPIKey`);
@@ -52,7 +49,7 @@ class TrueRNG {
     GetRandomNumber() {
         Debug.Group(`GetRandomNumber`);
         if (!this.Enabled) {
-            Debug.WriteLine(`trueRNG disabled, returning original function.`);
+            Debug.WriteLine(`TrueRNG disabled, returning original function.`);
             Debug.GroupEnd();
             return this.OriginalRandomFunction();
         }
@@ -83,18 +80,32 @@ class TrueRNG {
             Debug.GroupEnd();
             return this.OriginalRandomFunction();
         }
+        let rngFunction = this.PopRandomNumber;
+        if (this.PreRNGEventHandler) {
+            Debug.Group(`Pre Event Handler`);
+            let ref = new Ref(rngFunction);
+            if (this.PreRNGEventHandler(this, ref)) {
+                return this.OriginalRandomFunction();
+            }
+            rngFunction = ref.Reference;
+            Debug.GroupEnd();
+        }
         Debug.WriteLine(`max: ${this.MaxCachedNumbers} update: ${this.UpdatePoint} val: ${this.RandomNumbers.length / this.MaxCachedNumbers}`);
         if ((this.RandomNumbers.length / this.MaxCachedNumbers) < this.UpdatePoint) {
             Debug.WriteLine(`Limited Random Numbers Available`);
             this.UpdateRandomNumbers();
         }
         Debug.WriteLine(`Success`);
-        let rng = this.RandomNumber();
+        let rng = new Ref(rngFunction());
+        if (this.PostRNGEventHandler) {
+            this.PostRNGEventHandler(this, rng);
+        }
+        this.LastRandomNumber = rng.Reference;
         Debug.GroupEnd();
-        return rng;
+        return this.LastRandomNumber;
     }
-    RandomNumber() {
-        Debug.Group(`RandomNumber`);
+    PopRandomNumber() {
+        Debug.Group(`PopRandomNumber`);
         let ms = new Date().getTime();
         let index = ms % this.RandomNumbers.length;
         let rng = this.RandomNumbers[index];
