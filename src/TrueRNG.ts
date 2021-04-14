@@ -409,7 +409,7 @@ Hooks.once('init', () =>
 		scope: "world",      // This specifies a world-level setting
 		config: true,        // This specifies that the setting appears in the configuration view
 		type: Boolean,
-		onchange: (value: boolean) =>
+		onChange: (value: boolean) =>
 		{
 			Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
 			trueRNG.Enabled = value;

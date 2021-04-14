@@ -274,7 +274,7 @@ Hooks.once('init', () => {
             scope: "world",
             config: true,
             type: Boolean,
-            onchange: (value) => {
+            onChange: (value) => {
                 Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
                 trueRNG.Enabled = value;
             },
