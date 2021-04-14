@@ -364,15 +364,15 @@ Hooks.once('init', () =>
 	{
 		name: "Update Point",
 		hint: "Grab more values when the number of cached dice rolls goes below this percentage of the max dice number.",
-		scope: "world",      // This specifies a world-level setting
-		config: true,        // This specifies that the setting appears in the configuration view
+		scope: "world",
+		config: true,
 		type: Number,
-		range: {             // If range is specified, the resulting setting will be a range slider
+		range: {
 			min: 1,
 			max: 100,
 			step: 1
 		},
-		default: 50,         // The default value for the setting
+		default: 50,
 		onChange: (value: number) => 
 		{
 			Debug.WriteLine(`New Update Point: ${value}`);
@@ -388,14 +388,14 @@ Hooks.once('init', () =>
 	{
 		name: "Print Debug Messages",
 		hint: "Print debug messages to console",
-		scope: "world",      // This specifies a world-level setting
-		config: true,        // This specifies that the setting appears in the configuration view
+		scope: "client",
+		config: true,
 		type: Boolean,
 		onChange: (value: boolean) => 
 		{
 			Debug.WriteLine(`New Debug Mode: ${value}`);
 		},
-		default: true         // The default value for the setting
+		default: true
 	};
 
 	game.settings.register("trueRNG", "DEBUG", params);
@@ -406,18 +406,19 @@ Hooks.once('init', () =>
 	{
 		name: "Enabled",
 		hint: "Enables/Disables the module",
-		scope: "world",      // This specifies a world-level setting
-		config: true,        // This specifies that the setting appears in the configuration view
+		scope: "world",
+		config: true,
 		type: Boolean,
 		onChange: (value: boolean) =>
 		{
 			Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
 			trueRNG.Enabled = value;
 		},
-		default: true         // The default value for the setting
+		default: true
 	};
 
 	game.settings.register("trueRNG", "ENABLED", params);
+	trueRNG.Enabled = game.settings.get("trueRNG", "ENABLED");
 	// #endregion
 
 	let maxCached = game.settings.get("trueRNG", "MAXCACHEDNUMBERS");

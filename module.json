@@ -2,7 +2,7 @@
 	"name": "truerng",
 	"title": "True RNG",
 	"description": "Replaces the default random number generator with api calls to random.org. Providing truly random dice rolls. API Key Needed.",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"author": "KiD Fearless",
 	"minimumCoreVersion": "0.7.9",
 	"compatibleCoreVersion": "0.7.9",
@@ -13,5 +13,5 @@
 	"bugs": "https://github.com/kidfearless/Foundry-TrueRNG/issues",
 	"url": "https://github.com/kidfearless/Foundry-TrueRNG",
 	"manifest": "https://raw.githubusercontent.com/kidfearless/Foundry-TrueRNG/master/module.json",
-	"download": "https://github.com/kidfearless/Foundry-TrueRNG/archive/refs/tags/v1.0.1.zip"
+	"download": "https://github.com/kidfearless/Foundry-TrueRNG/archive/refs/tags/v1.0.2.zip"
 }

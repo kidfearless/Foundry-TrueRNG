@@ -256,13 +256,13 @@ Hooks.once('init', () => {
         {
             name: "Print Debug Messages",
             hint: "Print debug messages to console",
-            scope: "world",
+            scope: "client",
             config: true,
             type: Boolean,
             onChange: (value) => {
                 Debug.WriteLine(`New Debug Mode: ${value}`);
             },
-            default: true // The default value for the setting
+            default: true
         };
     game.settings.register("trueRNG", "DEBUG", params);
     // #endregion
@@ -278,9 +278,10 @@ Hooks.once('init', () => {
                 Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
                 trueRNG.Enabled = value;
             },
-            default: true // The default value for the setting
+            default: true
         };
     game.settings.register("trueRNG", "ENABLED", params);
+    trueRNG.Enabled = game.settings.get("trueRNG", "ENABLED");
     // #endregion
     let maxCached = game.settings.get("trueRNG", "MAXCACHEDNUMBERS");
     trueRNG.MaxCachedNumbers = parseInt(maxCached);
