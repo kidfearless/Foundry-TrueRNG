@@ -2,6 +2,7 @@ import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
 import { JsonRPCRequest } from './JsonRPC';
 import { PreRNGEvent, PostRNGEvent, RNGFunction, Ref } from './Types.js';
+import { runInThisContext } from "node:vm";
 
 declare var Hooks;
 declare var game;
@@ -228,7 +229,7 @@ export class TrueRNG
 			return this.OriginalRandomFunction!();
 		}
 
-		let rngFuncReference = new Ref<RNGFunction>(this.PopRandomNumber);
+		let rngFuncReference = new Ref<RNGFunction>(this.PopRandomNumber.bind(this));
 
 
 		if (this.PreRNGEventHandler)
@@ -315,7 +316,7 @@ Hooks.once('init', () =>
 	// WARNING: CONFIG.Dice.randomUniform is a client sided function.
 	// So players can potentially abuse this.
 	trueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
-	CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber;
+	CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber.bind(trueRNG);
 
 	// #region api key
 	let params: any =

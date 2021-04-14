@@ -133,7 +133,7 @@ export class TrueRNG {
             // Debug.GroupEnd();
             return this.OriginalRandomFunction();
         }
-        let rngFuncReference = new Ref(this.PopRandomNumber);
+        let rngFuncReference = new Ref(this.PopRandomNumber.bind(this));
         if (this.PreRNGEventHandler) {
             // Debug.Group(`Pre Event Handler`);
             if (this.PreRNGEventHandler(this, rngFuncReference)) {
@@ -193,7 +193,7 @@ Hooks.once('init', () => {
     // WARNING: CONFIG.Dice.randomUniform is a client sided function.
     // So players can potentially abuse this.
     trueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
-    CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber;
+    CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber.bind(trueRNG);
     // #region api key
     let params = {
         name: "Random.org API Key",
