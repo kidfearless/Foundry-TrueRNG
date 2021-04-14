@@ -9,16 +9,97 @@ declare var CONFIG;
 
 export class TrueRNG
 {
+	/**
+	 * An array of cached floating point random numbers that is pulled from for the RNG functions.
+	 *
+	 * @type {number[]}
+	 * @memberof TrueRNG
+	 */
 	public RandomNumbers: number[] = [];
+
+	/**
+	 * An instance of the RandomAPI class. All random.org API calls go through this property.
+	 *
+	 * @type {(RandomAPI | null)}
+	 * @memberof TrueRNG
+	 */
 	public RandomGenerator: RandomAPI | null = null;
+
+	/**
+	 * A temporary variable used to determine if we are awaiting a response from random.org.
+	 * Dice rolls happen all at once when you do /r 100d20 so we don't want to make 99 api calls and burn through our quota on a single player.
+	 *
+	 * @type {boolean}
+	 * @memberof TrueRNG
+	 */
 	public AwaitingResponse: boolean;
+	
+	/**
+	 * Cached copy of it's game settings counter part. There's no real reason to cache it but here it is.
+	 *
+	 * @type {number}
+	 * @memberof TrueRNG
+	 */
 	public MaxCachedNumbers: number;
+
+	/**
+	 * Cached copy of it's game settings counter part.
+	 *
+	 * @type {number}
+	 * @memberof TrueRNG
+	 */
 	public UpdatePoint: number;
+
+	/**
+	 * Whether or not we've alerted the clients that they haven't entered a valid api key.
+	 *
+	 * @type {boolean}
+	 * @memberof TrueRNG
+	 */
 	public HasAlerted: boolean;
+
+	/**
+	 * Is this module enabled right now. Allows for temporarily disabling the module without reloading the entire application by disabling a module.
+	 *
+	 * @type {boolean}
+	 * @memberof TrueRNG
+	 */
 	public Enabled: boolean;
+
+	/**
+	 * A copy of Foundry's RNG function before we overwrote it. This is used as a fallback for when we run out of random numbers somehow.
+	 * To prevent having to check for null it's default value is Math.random.
+	 * 
+	 * @default Math.random
+	 * @type {RNGFunction}
+	 * @memberof TrueRNG
+	 */
 	public OriginalRandomFunction: RNGFunction = Math.random;
+
+	/**
+	 * Function to hold a pre event handler. This is called after the state of the module has been validated but before TrueRNG.PopRandomNumber has been called.
+	 * Use this to run your own rng functions instead of TrueRNG's.
+	 *
+	 * @type {(PreRNGEvent | null)}
+	 * @memberof TrueRNG
+	 */
 	public PreRNGEventHandler: PreRNGEvent | null = null;
+
+	/**
+	 * Function to hold a post event handler. This is called after a random number has been generated but before that number has been returned.
+	 * Use this to tweak the generated numbers before being returned to the user.
+	 *
+	 * @type {(PostRNGEvent | null)}
+	 * @memberof TrueRNG
+	 */
 	public PostRNGEventHandler: PostRNGEvent | null = null;
+
+	/**
+	 * The last number generated. Assigned just before GetRandomNumber returns it's value. It's mostly used for debugging.
+	 *
+	 * @type {number}
+	 * @memberof TrueRNG
+	 */
 	public LastRandomNumber: number;
 
 	constructor()
@@ -32,6 +113,13 @@ export class TrueRNG
 	}
 
 
+	/**
+	 * Create a new RandomAPI instance with the given key, and pull in new random numbers.
+	 *
+	 * @param {string} key random.org api key
+	 * @noreturn
+	 * @memberof TrueRNG
+	 */
 	public UpdateAPIKey(key: string): void
 	{
 		// Debug.Group(`UpdateAPIKey`);
@@ -41,6 +129,13 @@ export class TrueRNG
 		// Debug.GroupEnd();
 	}
 
+
+	/**
+	 * Pulls in new random numbers from random.org if we are enabled and not waiting for a response currently.
+	 *
+	 * @noreturn
+	 * @memberof TrueRNG
+	 */
 	public UpdateRandomNumbers(): void
 	{
 		// Debug.Group(`UpdateRandomNumbers`);
@@ -77,6 +172,14 @@ export class TrueRNG
 
 		// Debug.GroupEnd();
 	}
+
+
+	/**
+	 * Returns a random number either from the cached random.org numbers or from Foundry's random function.
+	 *
+	 * @return {number} A random decimal number between 0.0 and 1.0
+	 * @memberof TrueRNG
+	 */
 	public GetRandomNumber(): number
 	{
 		// Debug.Group(`GetRandomNumber`);
@@ -128,10 +231,10 @@ export class TrueRNG
 		let rngFuncReference = new Ref<RNGFunction>(this.PopRandomNumber);
 
 
-		if(this.PreRNGEventHandler)
+		if (this.PreRNGEventHandler)
 		{
 			// Debug.Group(`Pre Event Handler`);
-			if(this.PreRNGEventHandler(this, rngFuncReference))
+			if (this.PreRNGEventHandler(this, rngFuncReference))
 			{
 				rngFuncReference.Reference = this.OriginalRandomFunction;
 			}
@@ -155,7 +258,7 @@ export class TrueRNG
 		let randomNumber = rngFuncReference.Reference();
 		let randomNumberRef = new Ref(randomNumber);
 
-		if(this.PostRNGEventHandler)
+		if (this.PostRNGEventHandler)
 		{
 			this.PostRNGEventHandler(this, randomNumberRef);
 		}
@@ -169,6 +272,15 @@ export class TrueRNG
 		return this.LastRandomNumber;
 	}
 
+
+	/**
+	 * Picks a "random" index from the RandomNumbers array and removes the item from that index from the array and returns it.
+	 * Index is determined by the current time in milliseconds modulused by the length of the array.
+	 *
+	 * @return {number} random number from the cached array of random.org numbers
+	 * @exception {OutOfBoundsException} If the RandomNumbers.length property is 0 then this can throw an exception.
+	 * @memberof TrueRNG
+	 */
 	public PopRandomNumber(): number
 	{
 		// Debug.Group(`PopRandomNumber`);
@@ -192,6 +304,7 @@ export class TrueRNG
 }
 
 var trueRNG = new TrueRNG();
+// This allows us to access it in a global scope from any module. Though the point at which it's available is indeterminate
 globalThis.TrueRNG = trueRNG;
 
 Hooks.once('init', () =>

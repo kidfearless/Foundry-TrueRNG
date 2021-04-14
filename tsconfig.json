@@ -9,7 +9,7 @@
 	  "strictPropertyInitialization": true,
 	  "strictNullChecks": true,
 	  "strictBindCallApply": true,
-	  "removeComments": true,
+	  "removeComments": false,
 	  "pretty": true,
 	  "declaration": true,
 	  "declarationDir": "./declarations/",

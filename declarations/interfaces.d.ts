@@ -3,16 +3,40 @@ export interface IKeyed {
     apiKey?: string;
 }
 export interface ILimitedResponse extends IKeyed {
+    /**
+     * How many random decimal fractions you need. Must be within the [1, 10000] range.
+     *
+     * @type {int}
+     * @memberof ILimitedResponse
+     */
     n: int;
 }
 export interface IReplacement {
     replacement?: boolean;
 }
 export interface IIntegerMethods extends ILimitedResponse, IReplacement {
+    /**
+     * The lower boundary for the range from which the random numbers will be picked. Must be within the [-1e9,1e9] range.
+     *
+     * @type {int}
+     * @memberof IIntegerMethods
+     */
     min: int;
+    /**
+     * The upper boundary for the range from which the random numbers will be picked. Must be within the [-1e9,1e9] range.
+     *
+     * @type {int}
+     * @memberof IIntegerMethods
+     */
     max: int;
 }
 export interface IGenerateIntegers extends IIntegerMethods {
+    /**
+     * Specifies whether the random numbers should be picked with replacement. The default (true) will cause the numbers to be picked with replacement, i.e., the resulting numbers may contain duplicate values (like a series of dice rolls). If you want the numbers picked to be unique (like raffle tickets drawn from a container), set this value to false.
+     *
+     * @type {boolean}
+     * @memberof IGenerateIntegers
+     */
     base?: 2 | 8 | 10 | 16;
 }
 export interface IGenerateIntegerSequences extends IIntegerMethods {
