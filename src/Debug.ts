@@ -50,4 +50,19 @@ export class Debug
 			console.groupEnd();
 		}
 	}
+
+	public static Assert(value, ...params):void
+	{
+		if(Debug.Enabled)
+		{
+			if(params.length)
+			{
+				console.assert(value, params);
+			}
+			else
+			{
+				console.log(value);
+			}
+		}
+	}
 }

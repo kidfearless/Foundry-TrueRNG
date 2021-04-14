@@ -16,13 +16,10 @@ export class TrueRNG {
         this.LastRandomNumber = Math.random();
     }
     UpdateAPIKey(key) {
-        Debug.Group(`UpdateAPIKey`);
         this.RandomGenerator = new RandomAPI(key);
         this.UpdateRandomNumbers();
-        Debug.GroupEnd();
     }
     UpdateRandomNumbers() {
-        Debug.Group(`UpdateRandomNumbers`);
         if (!this.Enabled) {
             Debug.WriteLine(`Module Disabled...Returning early`);
             return;
@@ -44,13 +41,10 @@ export class TrueRNG {
             Debug.WriteLine(`Resetting awaiting response property`);
             this.AwaitingResponse = false;
         });
-        Debug.GroupEnd();
     }
     GetRandomNumber() {
-        Debug.Group(`GetRandomNumber`);
         if (!this.Enabled) {
             Debug.WriteLine(`TrueRNG disabled, returning original function.`);
-            Debug.GroupEnd();
             return this.OriginalRandomFunction();
         }
         if (!this.RandomGenerator || !this.RandomGenerator.ApiKey) {
@@ -69,26 +63,18 @@ export class TrueRNG {
                 d.render(true);
             }
             Debug.WriteLine(`Bad API Key`);
-            Debug.GroupEnd();
             return this.OriginalRandomFunction();
         }
         if (!this.RandomNumbers.length) {
             Debug.WriteLine(`No Random Numbers`);
-            if (!this.AwaitingResponse) {
-                this.UpdateRandomNumbers();
-            }
-            Debug.GroupEnd();
+            this.UpdateRandomNumbers();
             return this.OriginalRandomFunction();
         }
-        let rngFunction = this.PopRandomNumber;
+        let rngFuncReference = new Ref(this.PopRandomNumber);
         if (this.PreRNGEventHandler) {
-            Debug.Group(`Pre Event Handler`);
-            let ref = new Ref(rngFunction);
-            if (this.PreRNGEventHandler(this, ref)) {
-                return this.OriginalRandomFunction();
+            if (this.PreRNGEventHandler(this, rngFuncReference)) {
+                rngFuncReference.Reference = this.OriginalRandomFunction;
             }
-            rngFunction = ref.Reference;
-            Debug.GroupEnd();
         }
         Debug.WriteLine(`max: ${this.MaxCachedNumbers} update: ${this.UpdatePoint} val: ${this.RandomNumbers.length / this.MaxCachedNumbers}`);
         if ((this.RandomNumbers.length / this.MaxCachedNumbers) < this.UpdatePoint) {
@@ -96,29 +82,26 @@ export class TrueRNG {
             this.UpdateRandomNumbers();
         }
         Debug.WriteLine(`Success`);
-        let rng = new Ref(rngFunction());
+        let randomNumber = rngFuncReference.Reference();
+        let randomNumberRef = new Ref(randomNumber);
         if (this.PostRNGEventHandler) {
-            this.PostRNGEventHandler(this, rng);
+            this.PostRNGEventHandler(this, randomNumberRef);
         }
-        this.LastRandomNumber = rng.Reference;
-        Debug.GroupEnd();
+        this.LastRandomNumber = randomNumberRef.Reference;
         return this.LastRandomNumber;
     }
     PopRandomNumber() {
-        Debug.Group(`PopRandomNumber`);
         let ms = new Date().getTime();
         let index = ms % this.RandomNumbers.length;
         let rng = this.RandomNumbers[index];
         this.RandomNumbers.splice(index, 1);
         Debug.WriteLine(`Returning ${rng}`, rng, index, ms);
-        Debug.GroupEnd();
         return rng;
     }
 }
 var trueRNG = new TrueRNG();
 globalThis.TrueRNG = trueRNG;
 Hooks.once('init', () => {
-    Debug.Group(`Init Callback`);
     trueRNG.OriginalRandomFunction = CONFIG.Dice.randomUniform;
     CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber;
     let params = {
@@ -207,6 +190,5 @@ Hooks.once('init', () => {
     if (currentKey && currentKey.length) {
         trueRNG.UpdateAPIKey(currentKey);
     }
-    Debug.GroupEnd();
 });
 //# sourceMappingURL=TrueRNG.js.map

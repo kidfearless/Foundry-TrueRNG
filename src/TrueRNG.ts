@@ -34,16 +34,16 @@ export class TrueRNG
 
 	public UpdateAPIKey(key: string): void
 	{
-		Debug.Group(`UpdateAPIKey`);
+		// Debug.Group(`UpdateAPIKey`);
 
 		this.RandomGenerator = new RandomAPI(key);
 		this.UpdateRandomNumbers();
-		Debug.GroupEnd();
+		// Debug.GroupEnd();
 	}
 
 	public UpdateRandomNumbers(): void
 	{
-		Debug.Group(`UpdateRandomNumbers`);
+		// Debug.Group(`UpdateRandomNumbers`);
 
 		if (!this.Enabled)
 		{
@@ -75,16 +75,16 @@ export class TrueRNG
 				this.AwaitingResponse = false;
 			});
 
-		Debug.GroupEnd();
+		// Debug.GroupEnd();
 	}
 	public GetRandomNumber(): number
 	{
-		Debug.Group(`GetRandomNumber`);
+		// Debug.Group(`GetRandomNumber`);
 
 		if (!this.Enabled)
 		{
 			Debug.WriteLine(`TrueRNG disabled, returning original function.`);
-			Debug.GroupEnd();
+			// Debug.GroupEnd();
 			return this.OriginalRandomFunction!();
 		}
 
@@ -110,7 +110,7 @@ export class TrueRNG
 			}
 
 			Debug.WriteLine(`Bad API Key`);
-			Debug.GroupEnd();
+			// Debug.GroupEnd();
 
 			return this.OriginalRandomFunction!();
 		}
@@ -118,26 +118,24 @@ export class TrueRNG
 		if (!this.RandomNumbers.length)
 		{
 			Debug.WriteLine(`No Random Numbers`);
-			if (!this.AwaitingResponse)
-			{
-				this.UpdateRandomNumbers();
-			}
-			Debug.GroupEnd();
+
+			this.UpdateRandomNumbers();
+			// Debug.GroupEnd();
 
 			return this.OriginalRandomFunction!();
 		}
 
-		let rngFunction = this.PopRandomNumber;
+		let rngFuncReference = new Ref<RNGFunction>(this.PopRandomNumber);
+
+
 		if(this.PreRNGEventHandler)
 		{
-			Debug.Group(`Pre Event Handler`);
-			let ref = new Ref<RNGFunction>(rngFunction);
-			if(this.PreRNGEventHandler(this, ref))
+			// Debug.Group(`Pre Event Handler`);
+			if(this.PreRNGEventHandler(this, rngFuncReference))
 			{
-				return this.OriginalRandomFunction();
+				rngFuncReference.Reference = this.OriginalRandomFunction;
 			}
-			rngFunction = ref.Reference;
-			Debug.GroupEnd();
+			// Debug.GroupEnd();
 		}
 
 
@@ -154,25 +152,26 @@ export class TrueRNG
 
 		Debug.WriteLine(`Success`);
 
-		let rng = new Ref(rngFunction());
+		let randomNumber = rngFuncReference.Reference();
+		let randomNumberRef = new Ref(randomNumber);
 
 		if(this.PostRNGEventHandler)
 		{
-			this.PostRNGEventHandler(this, rng);
+			this.PostRNGEventHandler(this, randomNumberRef);
 		}
 
-		this.LastRandomNumber = rng.Reference;
+		this.LastRandomNumber = randomNumberRef.Reference;
 
 
 
-		Debug.GroupEnd();
+		// Debug.GroupEnd();
 		// return the item
 		return this.LastRandomNumber;
 	}
 
 	public PopRandomNumber(): number
 	{
-		Debug.Group(`PopRandomNumber`);
+		// Debug.Group(`PopRandomNumber`);
 		// I don't like the idea that by retrieving all the random numbers at the start that our rolls are predetermined.
 		// So the number I grab from the array is based off the current time. 
 		// That way every millisecond that passes means that you are getting a different number.
@@ -187,7 +186,7 @@ export class TrueRNG
 		// remove that item from the array
 		this.RandomNumbers.splice(index, 1);
 		Debug.WriteLine(`Returning ${rng}`, rng, index, ms);
-		Debug.GroupEnd();
+		// Debug.GroupEnd();
 		return rng;
 	}
 }
@@ -197,7 +196,7 @@ globalThis.TrueRNG = trueRNG;
 
 Hooks.once('init', () =>
 {
-	Debug.Group(`Init Callback`);
+	// Debug.Group(`Init Callback`);
 
 	// cache the original random func, and overwrite it.
 	// WARNING: CONFIG.Dice.randomUniform is a client sided function.
@@ -319,5 +318,5 @@ Hooks.once('init', () =>
 	{
 		trueRNG.UpdateAPIKey(currentKey);
 	}
-	Debug.GroupEnd();
+	// Debug.GroupEnd();
 });

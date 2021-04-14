@@ -4,4 +4,5 @@ export declare class Debug {
     static Group(message: any): void;
     static GroupCollapsed(message: any): void;
     static GroupEnd(): void;
+    static Assert(value: any, ...params: any[]): void;
 }

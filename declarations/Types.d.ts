@@ -7,7 +7,7 @@ export declare type RNGFunction = {
     (): number;
 };
 export declare type PreRNGEvent = {
-    (self: TrueRNG, getRandomNumber: Ref<RNGFunction>): boolean | undefined;
+    (self: TrueRNG, getRandomNumber: Ref<RNGFunction>): boolean | void;
 };
 export declare type PostRNGEvent = {
     (self: TrueRNG, resultReference: Ref<number>): void;

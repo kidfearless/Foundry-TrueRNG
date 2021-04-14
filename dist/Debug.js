@@ -32,5 +32,15 @@ export class Debug {
             console.groupEnd();
         }
     }
+    static Assert(value, ...params) {
+        if (Debug.Enabled) {
+            if (params.length) {
+                console.assert(value, params);
+            }
+            else {
+                console.log(value);
+            }
+        }
+    }
 }
 //# sourceMappingURL=Debug.js.map

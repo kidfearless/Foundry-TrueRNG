@@ -29,7 +29,7 @@ export type PreRNGEvent = {
 	 *
 	 * @returns return true to block TrueRNG's functionality and use Foundry's instead. false to continue normal functionality.
 	 */
-	(self: TrueRNG, getRandomNumber: Ref<RNGFunction>): boolean | undefined;
+	(self: TrueRNG, getRandomNumber: Ref<RNGFunction>): boolean | void;
 };
 export type PostRNGEvent = {
 	/**
