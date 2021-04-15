@@ -207,7 +207,7 @@ Hooks.once('init', () => {
             trueRNG.UpdateAPIKey(value);
         }
     };
-    game.settings.register("trueRNG", "APIKEY", params);
+    game.settings.register("truerng", "APIKEY", params);
     // #endregion
     // #region max cached numbers
     params =
@@ -228,7 +228,7 @@ Hooks.once('init', () => {
                 trueRNG.MaxCachedNumbers = value;
             }
         };
-    game.settings.register("trueRNG", "MAXCACHEDNUMBERS", params);
+    game.settings.register("truerng", "MAXCACHEDNUMBERS", params);
     // #endregion
     // #region Update Point
     params =
@@ -249,7 +249,7 @@ Hooks.once('init', () => {
                 trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
             }
         };
-    game.settings.register("trueRNG", "UPDATEPOINT", params);
+    game.settings.register("truerng", "UPDATEPOINT", params);
     // #endregion
     // #region Debug Messages
     params =
@@ -264,7 +264,7 @@ Hooks.once('init', () => {
             },
             default: true
         };
-    game.settings.register("trueRNG", "DEBUG", params);
+    game.settings.register("truerng", "DEBUG", params);
     // #endregion
     // #region Enabled Setting
     params =
@@ -280,14 +280,14 @@ Hooks.once('init', () => {
             },
             default: true
         };
-    game.settings.register("trueRNG", "ENABLED", params);
-    trueRNG.Enabled = game.settings.get("trueRNG", "ENABLED");
+    game.settings.register("truerng", "ENABLED", params);
+    trueRNG.Enabled = game.settings.get("truerng", "ENABLED");
     // #endregion
-    let maxCached = game.settings.get("trueRNG", "MAXCACHEDNUMBERS");
+    let maxCached = game.settings.get("truerng", "MAXCACHEDNUMBERS");
     trueRNG.MaxCachedNumbers = parseInt(maxCached);
-    let updatePoint = game.settings.get("trueRNG", "UPDATEPOINT");
+    let updatePoint = game.settings.get("truerng", "UPDATEPOINT");
     trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
-    let currentKey = game.settings.get("trueRNG", "APIKEY");
+    let currentKey = game.settings.get("truerng", "APIKEY");
     if (currentKey && currentKey.length) {
         trueRNG.UpdateAPIKey(currentKey);
     }
