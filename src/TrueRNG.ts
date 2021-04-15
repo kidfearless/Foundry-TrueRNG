@@ -2,7 +2,7 @@ import { Debug } from "./Debug.js";
 import { RandomAPI } from "./RandomAPI.js";
 import { JsonRPCRequest } from './JsonRPC';
 import { PreRNGEvent, PostRNGEvent, RNGFunction, Ref } from './Types.js';
-import { runInThisContext } from "node:vm";
+import { LocalStorage } from './BrowserConfig.js';
 
 declare var Hooks;
 declare var game;
@@ -428,10 +428,22 @@ Hooks.once('init', () =>
 	trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
 
 
+	// try to retrieve the api key from the game settings
 	let currentKey = game.settings.get("truerng", "APIKEY");
+	// If we find the key, save it in storage and update the TrueRNG's copy of it.
 	if (currentKey && currentKey.length)
 	{
+		LocalStorage.Set("TrueRNG.ApiKey", currentKey);
+		
 		trueRNG.UpdateAPIKey(currentKey);
+	}
+	// otherwise check if we have an 
+	else if(LocalStorage.Get("TrueRNG.ApiKey", null))
+	{
+		let savedKey = LocalStorage.Get<string>("TrueRNG.ApiKey");
+		game.settings.set("truerng", "APIKEY", savedKey);
+
+		trueRNG.UpdateAPIKey(savedKey);
 	}
 	// Debug.GroupEnd();
 });
