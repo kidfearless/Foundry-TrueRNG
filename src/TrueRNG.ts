@@ -34,7 +34,7 @@ export class TrueRNG
 	 * @memberof TrueRNG
 	 */
 	public AwaitingResponse: boolean;
-	
+
 	/**
 	 * Cached copy of it's game settings counter part. There's no real reason to cache it but here it is.
 	 *
@@ -103,6 +103,14 @@ export class TrueRNG
 	 */
 	public LastRandomNumber: number;
 
+	/**
+	 * A reference to ON/OFF anchor tag. Always null for regular players, only the GM will have access to it.
+	 *
+	 * @type {(HTMLAnchorElement | null)}
+	 * @memberof TrueRNG
+	 */
+	public QuickToggleButton: HTMLAnchorElement | null;
+
 	constructor()
 	{
 		this.AwaitingResponse = false;
@@ -111,6 +119,7 @@ export class TrueRNG
 		this.HasAlerted = false;
 		this.Enabled = true;
 		this.LastRandomNumber = Math.random();
+		this.QuickToggleButton = null;
 	}
 
 
@@ -128,6 +137,83 @@ export class TrueRNG
 		this.RandomGenerator = new RandomAPI(key);
 		this.UpdateRandomNumbers();
 		// Debug.GroupEnd();
+	}
+
+	/**
+	 * Generates an anchor tag and a style element for the quick toggle button. Limited only to the GM.
+	 *
+	 * @param {boolean} enabled Is this setting currently enabled or disabled.
+	 * @noreturn
+	 * @memberof TrueRNG
+	 */
+	public GenerateQuickToggleButton(enabled: boolean)
+	{
+		if (!game.user || !game.user.isGM || this.QuickToggleButton)
+		{
+			return;
+		}
+
+		let classes = document.createElement("style") as HTMLStyleElement;
+		classes.innerHTML = `
+		.trhidden { display: none; }
+		.trvisible { display: initial; }
+		.trquickbutton {
+			flex: inherit;
+			margin: auto auto;
+			text-align: center;
+			padding-right: 4px;
+		}`;
+
+		document.body.appendChild(classes);
+
+
+		// has to be an anchor for the title property
+		let quickToggleButton = document.createElement("a");
+		let outerDiv = document.querySelector("#chat-controls");
+		let firstChild = document.querySelector("#chat-controls > .chat-control-icon");
+
+
+
+		quickToggleButton.id = "TrueRNGQuickToggleButton";
+		quickToggleButton.title = "Toggle the TrueRNG module";
+		quickToggleButton.classList.add("trquickbutton");
+
+		if (enabled)
+		{
+			quickToggleButton.classList.add("trvisible");
+		}
+		else
+		{
+			quickToggleButton.classList.add("trhidden");
+		}
+
+		if (game.settings.get("truerng", "ENABLED"))
+		{
+			quickToggleButton.innerHTML = "ON";
+		}
+		else
+		{
+			quickToggleButton.innerHTML = "OFF";
+		}
+
+		quickToggleButton.addEventListener("click", (ev) =>
+		{
+			if (game.settings.get("truerng", "ENABLED"))
+			{
+				game.settings.set("truerng", "ENABLED", false);
+				quickToggleButton.innerHTML = "OFF";
+			}
+			else
+			{
+				game.settings.set("truerng", "ENABLED", true);
+				quickToggleButton.innerHTML = "ON";
+			}
+		});
+
+
+		outerDiv?.insertBefore(quickToggleButton, firstChild);
+
+		this.QuickToggleButton = quickToggleButton;
 	}
 
 
@@ -421,6 +507,34 @@ Hooks.once('init', () =>
 	trueRNG.Enabled = game.settings.get("truerng", "ENABLED");
 	// #endregion
 
+	// #region Show Quick Toggle Button
+	params =
+	{
+		name: "Show Quick Toggle Button",
+		hint: "Toggles displaying a button above the dice roll text box that quickly enables or disables the module.",
+		scope: "client",
+		config: true,
+		type: Boolean,
+		onChange: (value: boolean) =>
+		{
+			Debug.WriteLine(`Show Quick Toggle Button: ${value}`);
+			if (value)
+			{
+				trueRNG.QuickToggleButton?.classList.remove("trhidden");
+				trueRNG.QuickToggleButton?.classList.add("trvisible");
+			}
+			else
+			{
+				trueRNG.QuickToggleButton?.classList.add("trhidden");
+				trueRNG.QuickToggleButton?.classList.remove("trvisible");
+			}
+		},
+		default: true
+	};
+
+	game.settings.register("truerng", "QUICKTOGGLE", params);
+	// #endregion
+
 	let maxCached = game.settings.get("truerng", "MAXCACHEDNUMBERS");
 	trueRNG.MaxCachedNumbers = parseInt(maxCached);
 
@@ -434,11 +548,11 @@ Hooks.once('init', () =>
 	if (currentKey && currentKey.length)
 	{
 		LocalStorage.Set("TrueRNG.ApiKey", currentKey);
-		
+
 		trueRNG.UpdateAPIKey(currentKey);
 	}
 	// otherwise check if we have an 
-	else if(LocalStorage.Get("TrueRNG.ApiKey", null))
+	else if (LocalStorage.Get("TrueRNG.ApiKey", null))
 	{
 		let savedKey = LocalStorage.Get<string>("TrueRNG.ApiKey");
 		game.settings.set("truerng", "APIKEY", savedKey);
@@ -449,49 +563,9 @@ Hooks.once('init', () =>
 	// Debug.GroupEnd();
 });
 
+// have to use ready in order for the query selectors to work.
 Hooks.once('ready', () =>
 {
-	if(!game.user || !game.user.isGM)
-	{
-		return;
-	}
-
-	let outerDiv = document.querySelector("#chat-controls");
-	let firstChild = document.querySelector("#chat-controls > .chat-control-icon");
-
-	let quickToggleButton = document.createElement("a");
-	if(game.settings.get("truerng", "ENABLED"))
-	{
-		quickToggleButton.innerHTML = "ON";
-	}
-	else
-	{
-		quickToggleButton.innerHTML = "OFF";
-	}
-
-	quickToggleButton.addEventListener("click", (ev) =>
-	{
-		if(game.settings.get("truerng", "ENABLED"))
-		{
-			game.settings.set("truerng", "ENABLED", false);
-			quickToggleButton.innerHTML = "OFF";
-		}
-		else
-		{
-			game.settings.set("truerng", "ENABLED", true);
-			quickToggleButton.innerHTML = "ON";
-		}
-	});
-
-	// @ts-ignore 
-	// style is not acutally read only
-	quickToggleButton.style = `
-		flex: inherit;
-		margin: auto auto;
-		text-align: center;
-		padding-right: 4px;`;
-
-	quickToggleButton.title = "Toggle the TrueRNG module";
-
-	outerDiv?.insertBefore(quickToggleButton, firstChild);
+	trueRNG.GenerateQuickToggleButton(game.settings.get("truerng", "QUICKTOGGLE") as boolean);
 });
+

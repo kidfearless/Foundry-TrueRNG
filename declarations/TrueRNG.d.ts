@@ -83,6 +83,13 @@ export declare class TrueRNG {
      * @memberof TrueRNG
      */
     LastRandomNumber: number;
+    /**
+     * A reference to ON/OFF anchor tag. Always null for regular players, only the GM will have access to it.
+     *
+     * @type {(HTMLAnchorElement | null)}
+     * @memberof TrueRNG
+     */
+    QuickToggleButton: HTMLAnchorElement | null;
     constructor();
     /**
      * Create a new RandomAPI instance with the given key, and pull in new random numbers.
@@ -92,6 +99,14 @@ export declare class TrueRNG {
      * @memberof TrueRNG
      */
     UpdateAPIKey(key: string): void;
+    /**
+     * Generates an anchor tag and a style element for the quick toggle button. Limited only to the GM.
+     *
+     * @param {boolean} enabled Is this setting currently enabled or disabled.
+     * @noreturn
+     * @memberof TrueRNG
+     */
+    GenerateQuickToggleButton(enabled: boolean): void;
     /**
      * Pulls in new random numbers from random.org if we are enabled and not waiting for a response currently.
      *
