@@ -445,5 +445,53 @@ Hooks.once('init', () =>
 
 		trueRNG.UpdateAPIKey(savedKey);
 	}
+
 	// Debug.GroupEnd();
+});
+
+Hooks.once('ready', () =>
+{
+	if(!game.user || !game.user.isGM)
+	{
+		return;
+	}
+
+	let outerDiv = document.querySelector("#chat-controls");
+	let firstChild = document.querySelector("#chat-controls > .chat-control-icon");
+
+	let quickToggleButton = document.createElement("a");
+	if(game.settings.get("truerng", "ENABLED"))
+	{
+		quickToggleButton.innerHTML = "ON";
+	}
+	else
+	{
+		quickToggleButton.innerHTML = "OFF";
+	}
+
+	quickToggleButton.addEventListener("click", (ev) =>
+	{
+		if(game.settings.get("truerng", "ENABLED"))
+		{
+			game.settings.set("truerng", "ENABLED", false);
+			quickToggleButton.innerHTML = "OFF";
+		}
+		else
+		{
+			game.settings.set("truerng", "ENABLED", true);
+			quickToggleButton.innerHTML = "ON";
+		}
+	});
+
+	// @ts-ignore 
+	// style is not acutally read only
+	quickToggleButton.style = `
+		flex: inherit;
+		margin: auto auto;
+		text-align: center;
+		padding-right: 4px;`;
+
+	quickToggleButton.title = "Toggle the TrueRNG module";
+
+	outerDiv?.insertBefore(quickToggleButton, firstChild);
 });
