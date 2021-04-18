@@ -384,6 +384,13 @@ Hooks.once('init', () => {
 });
 // have to use ready in order for the query selectors to work.
 Hooks.once('ready', () => {
-    trueRNG.GenerateQuickToggleButton(game.settings.get("truerng", "QUICKTOGGLE"));
+    let enabled = true;
+    try {
+        // some big brained module maker thinks it's a good idea to call the ready hook before the game is actually ready.
+        // so now we add a try catch because of their code.
+        enabled = game.settings.get("truerng", "QUICKTOGGLE");
+    }
+    catch (e) { }
+    trueRNG.GenerateQuickToggleButton(enabled);
 });
 //# sourceMappingURL=TrueRNG.js.map
