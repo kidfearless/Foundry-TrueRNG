@@ -338,8 +338,6 @@ export class TrueRNG
 			this.UpdateRandomNumbers();
 		}
 
-
-
 		Debug.WriteLine(`Success`);
 
 		let randomNumber = rngFuncReference.Reference();
