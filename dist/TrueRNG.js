@@ -383,7 +383,7 @@ Hooks.once('init', () => {
     // Debug.GroupEnd();
 });
 // have to use ready in order for the query selectors to work.
-Hooks.once('ready', () => {
+Hooks.once("renderChatLog", () => {
     let enabled = true;
     try {
         // some big brained module maker thinks it's a good idea to call the ready hook before the game is actually ready.
