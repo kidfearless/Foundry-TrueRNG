@@ -5,7 +5,7 @@
 	"version": "1.0.6",
 	"author": "KiD Fearless",
 	"minimumCoreVersion": "0.7.9",
-	"compatibleCoreVersion": "0.8.5",
+	"compatibleCoreVersion": "0.8.6",
 	"esmodules": [
 		"dist/TrueRNG.js"
 	],
