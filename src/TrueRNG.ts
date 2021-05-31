@@ -561,8 +561,8 @@ Hooks.once('init', () =>
 	// Debug.GroupEnd();
 });
 
-// have to use ready in order for the query selectors to work.
-Hooks.once('ready', () =>
+// have to use ready in order for the query selectors to work... ready didn't have it ready in 0.8.x so now we use renderChatLog
+Hooks.once("renderChatLog", () =>
 {
 	let enabled = true;
 	try
