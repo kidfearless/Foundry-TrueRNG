@@ -233,6 +233,10 @@ export class TrueRNG {
         let index = ms % this.RandomNumbers.length;
         // get a copy of the number to return later
         let rng = this.RandomNumbers[index];
+        // In the rare case that we get a 0, don't return 0
+        if (rng <= Number.EPSILON) {
+            rng = Number.EPSILON;
+        }
         // remove that item from the array
         this.RandomNumbers.splice(index, 1);
         Debug.WriteLine(`Returning ${rng}`, rng, index, ms);
@@ -274,11 +278,11 @@ Hooks.once('init', () => {
             config: true,
             type: Number,
             range: {
-                min: 10,
+                min: 5,
                 max: 200,
                 step: 1
             },
-            default: 50,
+            default: 10,
             onChange: (value) => {
                 Debug.WriteLine(`New Max Cached Numbers: ${value}`);
                 trueRNG.MaxCachedNumbers = value;
@@ -382,7 +386,7 @@ Hooks.once('init', () => {
     }
     // Debug.GroupEnd();
 });
-// have to use ready in order for the query selectors to work.
+// have to use ready in order for the query selectors to work... ready didn't have it ready in 0.8.x so now we use renderChatLog
 Hooks.once("renderChatLog", () => {
     let enabled = true;
     try {
