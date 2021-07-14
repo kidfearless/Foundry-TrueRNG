@@ -3,6 +3,7 @@ import { RandomAPI } from "./RandomAPI.js";
 import { JsonRPCRequest } from './JsonRPC';
 import { PreRNGEvent, PostRNGEvent, RNGFunction, Ref } from './Types.js';
 import { LocalStorage } from './BrowserConfig.js';
+import { RNGFunction } from './Types';
 
 declare var Hooks;
 declare var game;
@@ -380,6 +381,13 @@ export class TrueRNG
 		let index = ms % this.RandomNumbers.length;
 		// get a copy of the number to return later
 		let rng = this.RandomNumbers[index];
+
+		// In the rare case that we get a 0, don't return 0
+		if(rng <= Number.EPSILON)
+		{
+			rng = Number.EPSILON;
+		}
+		
 		// remove that item from the array
 		this.RandomNumbers.splice(index, 1);
 		Debug.WriteLine(`Returning ${rng}`, rng, index, ms);
