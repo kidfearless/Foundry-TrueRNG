@@ -428,11 +428,11 @@ Hooks.once('init', () =>
 		config: true,        // This specifies that the setting appears in the configuration view
 		type: Number,
 		range: {             // If range is specified, the resulting setting will be a range slider
-			min: 10,
+			min: 5,
 			max: 200,
 			step: 1
 		},
-		default: 50,         // The default value for the setting
+		default: 10,         // The default value for the setting
 		onChange: (value: number) => 
 		{
 			Debug.WriteLine(`New Max Cached Numbers: ${value}`);
