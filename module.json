@@ -1,11 +1,17 @@
 {
-	"name": "truerng",
+	"id": "truerng",
 	"title": "True RNG",
 	"description": "Replaces the default random number generator with api calls to random.org. Providing truly random dice rolls. API Key Needed.",
 	"version": "1.0.6",
-	"author": "KiD Fearless",
-	"minimumCoreVersion": "0.7.9",
-	"compatibleCoreVersion": "0.8.6",
+	"authors": [
+		{
+			"name": "KiD Fearless"
+		}
+	],
+	"compatibility": {
+		"minimum": "0.7.9",
+		"verified": "0.8.6"
+	},
 	"esmodules": [
 		"dist/TrueRNG.js"
 	],
