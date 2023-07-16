@@ -1,4 +1,4 @@
-declare type int = number;
+type int = number;
 export interface IKeyed {
     apiKey?: string;
 }
@@ -55,12 +55,12 @@ export interface IGenerateStrings extends ILimitedResponse, IReplacement {
     length: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32;
     characters: string;
 }
-export declare type IGenerateUUIDs = ILimitedResponse;
+export type IGenerateUUIDs = ILimitedResponse;
 export interface IGenerateBlobs extends ILimitedResponse {
     size: int;
     format?: "base64" | "hex";
 }
-export declare type IGetUsage = IKeyed;
+export type IGetUsage = IKeyed;
 export interface IJsonRPCResponse<T> {
     random: T;
     bitsUsed: int;

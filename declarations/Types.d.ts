@@ -6,13 +6,13 @@ export declare class Ref<T> {
     Reference: T;
     constructor(value: T);
 }
-export declare type RNGFunction = {
+export type RNGFunction = {
     /**
      * @returns A floating point number between 0.0 and 1.0. For a 1d20 1.0 would be a 20.
      */
     (): number;
 };
-export declare type PreRNGEvent = {
+export type PreRNGEvent = {
     /**
      * Event callback function that is fired before the cached numbers gets updated and a new number is pulled.
      * It contains a reference to the TrueRNG object and an object containing the function it will use to get a random number.
@@ -26,7 +26,7 @@ export declare type PreRNGEvent = {
      */
     (self: TrueRNG, getRandomNumber: Ref<RNGFunction>): boolean | void;
 };
-export declare type PostRNGEvent = {
+export type PostRNGEvent = {
     /**
      * Fired after a random number has been pulled.
      *

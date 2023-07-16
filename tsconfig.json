@@ -15,7 +15,7 @@
 	  "declarationDir": "./declarations/",
 	  "lib": [
 		"dom",
-		"es6",
+		"ES2022",
 	  ],
 	  "alwaysStrict": true,
 	  "outDir": "./dist/",
