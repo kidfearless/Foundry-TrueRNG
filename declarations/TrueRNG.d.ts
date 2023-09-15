@@ -1,4 +1,4 @@
-import { RandomAPI } from "./RandomAPI.js";
+import { RandomAPI } from './RandomAPI.js';
 import { PreRNGEvent, PostRNGEvent, RNGFunction } from './Types.js';
 export declare class TrueRNG {
     /**

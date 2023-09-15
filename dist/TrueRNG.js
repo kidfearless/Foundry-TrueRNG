@@ -1,5 +1,5 @@
-import { Debug } from "./Debug.js";
-import { RandomAPI } from "./RandomAPI.js";
+import { Debug } from './Debug.js';
+import { RandomAPI } from './RandomAPI.js';
 import { Ref } from './Types.js';
 import { LocalStorage } from './BrowserConfig.js';
 export class TrueRNG {
@@ -75,7 +75,7 @@ export class TrueRNG {
         if (!game.user || !game.user.isGM || this.QuickToggleButton) {
             return;
         }
-        let classes = document.createElement("style");
+        let classes = document.createElement('style');
         classes.innerHTML = `
 		.trhidden { display: none; }
 		.trvisible { display: initial; }
@@ -87,32 +87,32 @@ export class TrueRNG {
 		}`;
         document.body.appendChild(classes);
         // has to be an anchor for the title property
-        let quickToggleButton = document.createElement("a");
-        let outerDiv = document.querySelector("#chat-controls");
-        let firstChild = document.querySelector("#chat-controls > .chat-control-icon");
-        quickToggleButton.id = "TrueRNGQuickToggleButton";
-        quickToggleButton.title = "Toggle the TrueRNG module";
-        quickToggleButton.classList.add("trquickbutton");
+        let quickToggleButton = document.createElement('a');
+        let outerDiv = document.querySelector('#chat-controls');
+        let firstChild = document.querySelector('#chat-controls > .chat-control-icon');
+        quickToggleButton.id = 'TrueRNGQuickToggleButton';
+        quickToggleButton.title = 'Toggle the TrueRNG module';
+        quickToggleButton.classList.add('trquickbutton');
         if (enabled) {
-            quickToggleButton.classList.add("trvisible");
+            quickToggleButton.classList.add('trvisible');
         }
         else {
-            quickToggleButton.classList.add("trhidden");
+            quickToggleButton.classList.add('trhidden');
         }
-        if (game.settings.get("truerng", "ENABLED")) {
-            quickToggleButton.innerHTML = "ON";
+        if (game.settings.get('truerng', 'ENABLED')) {
+            quickToggleButton.innerHTML = 'ON';
         }
         else {
-            quickToggleButton.innerHTML = "OFF";
+            quickToggleButton.innerHTML = 'OFF';
         }
-        quickToggleButton.addEventListener("click", (ev) => {
-            if (game.settings.get("truerng", "ENABLED")) {
-                game.settings.set("truerng", "ENABLED", false);
-                quickToggleButton.innerHTML = "OFF";
+        quickToggleButton.addEventListener('click', (ev) => {
+            if (game.settings.get('truerng', 'ENABLED')) {
+                game.settings.set('truerng', 'ENABLED', false);
+                quickToggleButton.innerHTML = 'OFF';
             }
             else {
-                game.settings.set("truerng", "ENABLED", true);
-                quickToggleButton.innerHTML = "ON";
+                game.settings.set('truerng', 'ENABLED', true);
+                quickToggleButton.innerHTML = 'ON';
             }
         });
         outerDiv === null || outerDiv === void 0 ? void 0 : outerDiv.insertBefore(quickToggleButton, firstChild);
@@ -168,14 +168,14 @@ export class TrueRNG {
                 this.HasAlerted = true;
                 // @ts-ignore
                 let d = new Dialog({
-                    title: "WARNING MISSING API KEY",
-                    content: "You must set an api key in Module Settings for trueRNG to function.",
+                    title: 'WARNING MISSING API KEY',
+                    content: 'You must set an api key in Module Settings for trueRNG to function.',
                     buttons: {
                         ok: {
-                            label: "Ok",
-                        }
+                            label: 'Ok',
+                        },
                     },
-                    default: "ok",
+                    default: 'ok',
                 });
                 d.render(true);
             }
@@ -198,7 +198,7 @@ export class TrueRNG {
             // Debug.GroupEnd();
         }
         Debug.WriteLine(`max: ${this.MaxCachedNumbers} update: ${this.UpdatePoint} val: ${this.RandomNumbers.length / this.MaxCachedNumbers}`);
-        if ((this.RandomNumbers.length / this.MaxCachedNumbers) < this.UpdatePoint) {
+        if (this.RandomNumbers.length / this.MaxCachedNumbers < this.UpdatePoint) {
             Debug.WriteLine(`Limited Random Numbers Available`);
             this.UpdateRandomNumbers();
         }
@@ -224,7 +224,7 @@ export class TrueRNG {
     PopRandomNumber() {
         // Debug.Group(`PopRandomNumber`);
         // I don't like the idea that by retrieving all the random numbers at the start that our rolls are predetermined.
-        // So the number I grab from the array is based off the current time. 
+        // So the number I grab from the array is based off the current time.
         // That way every millisecond that passes means that you are getting a different number.
         // This makes it so that the numbers are both random and are not predetermined.
         // get the current time in ms
@@ -256,143 +256,141 @@ Hooks.once('init', () => {
     CONFIG.Dice.randomUniform = trueRNG.GetRandomNumber.bind(trueRNG);
     // #region api key
     let params = {
-        name: "Random.org API Key",
-        hint: "Put your developer key from https://api.random.org/dashboard here",
-        scope: "world",
+        name: 'Random.org API Key',
+        hint: 'Put your developer key from https://api.random.org/dashboard here',
+        scope: 'world',
         config: true,
         type: String,
-        default: "",
-        onChange: value => {
+        default: '',
+        onChange: (value) => {
             Debug.WriteLine(`New API KEY: ${value}`);
             trueRNG.UpdateAPIKey(value);
-        }
+        },
     };
-    game.settings.register("truerng", "APIKEY", params);
+    game.settings.register('truerng', 'APIKEY', params);
     // #endregion
     // #region max cached numbers
-    params =
-        {
-            name: "Max Cached Numbers",
-            hint: "Number of random numbers to pull in per client. Keep this low if you reload your modules a lot. Keep it high if you tend to roll a lot of dice at once",
-            scope: "world",
-            config: true,
-            type: Number,
-            range: {
-                min: 5,
-                max: 200,
-                step: 1
-            },
-            default: 10,
-            onChange: (value) => {
-                Debug.WriteLine(`New Max Cached Numbers: ${value}`);
-                trueRNG.MaxCachedNumbers = value;
-            }
-        };
-    game.settings.register("truerng", "MAXCACHEDNUMBERS", params);
+    params = {
+        name: 'Max Cached Numbers',
+        hint: 'Number of random numbers to pull in per client. Keep this low if you reload your modules a lot. Keep it high if you tend to roll a lot of dice at once',
+        scope: 'world',
+        config: true,
+        type: Number,
+        range: {
+            // If range is specified, the resulting setting will be a range slider
+            min: 5,
+            max: 200,
+            step: 1,
+        },
+        default: 10,
+        onChange: (value) => {
+            Debug.WriteLine(`New Max Cached Numbers: ${value}`);
+            trueRNG.MaxCachedNumbers = value;
+        },
+    };
+    game.settings.register('truerng', 'MAXCACHEDNUMBERS', params);
     // #endregion
     // #region Update Point
-    params =
-        {
-            name: "Update Point",
-            hint: "Grab more values when the number of cached dice rolls goes below this percentage of the max dice number.",
-            scope: "world",
-            config: true,
-            type: Number,
-            range: {
-                min: 1,
-                max: 100,
-                step: 1
-            },
-            default: 50,
-            onChange: (value) => {
-                Debug.WriteLine(`New Update Point: ${value}`);
-                trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
-            }
-        };
-    game.settings.register("truerng", "UPDATEPOINT", params);
+    params = {
+        name: 'Update Point',
+        hint: 'Grab more values when the number of cached dice rolls goes below this percentage of the max dice number.',
+        scope: 'world',
+        config: true,
+        type: Number,
+        range: {
+            min: 1,
+            max: 100,
+            step: 1,
+        },
+        default: 50,
+        onChange: (value) => {
+            Debug.WriteLine(`New Update Point: ${value}`);
+            trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
+        },
+    };
+    game.settings.register('truerng', 'UPDATEPOINT', params);
     // #endregion
     // #region Debug Messages
-    params =
-        {
-            name: "Print Debug Messages",
-            hint: "Print debug messages to console",
-            scope: "client",
-            config: true,
-            type: Boolean,
-            onChange: (value) => {
-                Debug.WriteLine(`New Debug Mode: ${value}`);
-            },
-            default: true
-        };
-    game.settings.register("truerng", "DEBUG", params);
+    params = {
+        name: 'Print Debug Messages',
+        hint: 'Print debug messages to console',
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        onChange: (value) => {
+            Debug.WriteLine(`New Debug Mode: ${value}`);
+        },
+        default: true,
+    };
+    game.settings.register('truerng', 'DEBUG', params);
     // #endregion
     // #region Enabled Setting
-    params =
-        {
-            name: "Enabled",
-            hint: "Enables/Disables the module",
-            scope: "world",
-            config: true,
-            type: Boolean,
-            onChange: (value) => {
-                Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
-                trueRNG.Enabled = value;
-            },
-            default: true
-        };
-    game.settings.register("truerng", "ENABLED", params);
-    trueRNG.Enabled = game.settings.get("truerng", "ENABLED");
+    params = {
+        name: 'Enabled',
+        hint: 'Enables/Disables the module',
+        scope: 'world',
+        config: true,
+        type: Boolean,
+        onChange: (value) => {
+            Debug.WriteLine(`New Enabled/Disabled Setting: ${value}`);
+            trueRNG.Enabled = value;
+        },
+        default: true,
+    };
+    game.settings.register('truerng', 'ENABLED', params);
+    trueRNG.Enabled = game.settings.get('truerng', 'ENABLED');
     // #endregion
     // #region Show Quick Toggle Button
-    params =
-        {
-            name: "Show Quick Toggle Button",
-            hint: "Toggles displaying a button above the dice roll text box that quickly enables or disables the module.",
-            scope: "client",
-            config: true,
-            type: Boolean,
-            onChange: (value) => {
-                var _a, _b, _c, _d;
-                Debug.WriteLine(`Show Quick Toggle Button: ${value}`);
-                if (value) {
-                    (_a = trueRNG.QuickToggleButton) === null || _a === void 0 ? void 0 : _a.classList.remove("trhidden");
-                    (_b = trueRNG.QuickToggleButton) === null || _b === void 0 ? void 0 : _b.classList.add("trvisible");
-                }
-                else {
-                    (_c = trueRNG.QuickToggleButton) === null || _c === void 0 ? void 0 : _c.classList.add("trhidden");
-                    (_d = trueRNG.QuickToggleButton) === null || _d === void 0 ? void 0 : _d.classList.remove("trvisible");
-                }
-            },
-            default: true
-        };
-    game.settings.register("truerng", "QUICKTOGGLE", params);
+    params = {
+        name: 'Show Quick Toggle Button',
+        hint: 'Toggles displaying a button above the dice roll text box that quickly enables or disables the module.',
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        onChange: (value) => {
+            var _a, _b, _c, _d;
+            Debug.WriteLine(`Show Quick Toggle Button: ${value}`);
+            if (value) {
+                (_a = trueRNG.QuickToggleButton) === null || _a === void 0 ? void 0 : _a.classList.remove('trhidden');
+                (_b = trueRNG.QuickToggleButton) === null || _b === void 0 ? void 0 : _b.classList.add('trvisible');
+            }
+            else {
+                (_c = trueRNG.QuickToggleButton) === null || _c === void 0 ? void 0 : _c.classList.add('trhidden');
+                (_d = trueRNG.QuickToggleButton) === null || _d === void 0 ? void 0 : _d.classList.remove('trvisible');
+            }
+        },
+        default: true,
+    };
+    game.settings.register('truerng', 'QUICKTOGGLE', params);
     // #endregion
-    let maxCached = game.settings.get("truerng", "MAXCACHEDNUMBERS");
+    let maxCached = game.settings.get('truerng', 'MAXCACHEDNUMBERS');
     trueRNG.MaxCachedNumbers = parseInt(maxCached);
-    let updatePoint = game.settings.get("truerng", "UPDATEPOINT");
+    let updatePoint = game.settings.get('truerng', 'UPDATEPOINT');
     trueRNG.UpdatePoint = parseFloat(updatePoint) * 0.01;
-    // try to retrieve the api key from the game settings
-    let currentKey = game.settings.get("truerng", "APIKEY");
-    // If we find the key, save it in storage and update the TrueRNG's copy of it.
-    if (currentKey && currentKey.length) {
-        LocalStorage.Set("TrueRNG.ApiKey", currentKey);
-        trueRNG.UpdateAPIKey(currentKey);
-    }
-    // otherwise check if we have an 
-    else if (LocalStorage.Get("TrueRNG.ApiKey", null)) {
-        let savedKey = LocalStorage.Get("TrueRNG.ApiKey");
-        game.settings.set("truerng", "APIKEY", savedKey);
-        trueRNG.UpdateAPIKey(savedKey);
-    }
     // Debug.GroupEnd();
 });
+Hooks.once('ready', () => {
+    // try to retrieve the api key from the game settings
+    let currentKey = game.settings.get('truerng', 'APIKEY');
+    // If we find the key, save it in storage and update the TrueRNG's copy of it.
+    if (currentKey && currentKey.length) {
+        LocalStorage.Set('TrueRNG.ApiKey', currentKey);
+        trueRNG.UpdateAPIKey(currentKey);
+    }
+    // otherwise check if we have an
+    else if (LocalStorage.Get('TrueRNG.ApiKey', null)) {
+        let savedKey = LocalStorage.Get('TrueRNG.ApiKey');
+        game.settings.set('truerng', 'APIKEY', savedKey);
+        trueRNG.UpdateAPIKey(savedKey);
+    }
+});
 // have to use ready in order for the query selectors to work... ready didn't have it ready in 0.8.x so now we use renderChatLog
-Hooks.once("renderChatLog", () => {
+Hooks.once('renderChatLog', () => {
     let enabled = true;
     try {
         // some big brained module maker thinks it's a good idea to call the ready hook before the game is actually ready.
         // so now we add a try catch because of their code.
-        enabled = game.settings.get("truerng", "QUICKTOGGLE");
+        enabled = game.settings.get('truerng', 'QUICKTOGGLE');
     }
     catch (e) { }
     trueRNG.GenerateQuickToggleButton(enabled);
